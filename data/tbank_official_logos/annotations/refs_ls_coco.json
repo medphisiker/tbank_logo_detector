@@ -1,0 +1,217 @@
+{
+  "images": [
+    {
+      "width": 461,
+      "height": 462,
+      "id": 0,
+      "file_name": "..\/..\/label-studio\/data\/tbank_official_logos\/logo0.png"
+    },
+    {
+      "width": 350,
+      "height": 351,
+      "id": 1,
+      "file_name": "..\/..\/label-studio\/data\/tbank_official_logos\/logo1.png"
+    },
+    {
+      "width": 351,
+      "height": 351,
+      "id": 2,
+      "file_name": "..\/..\/label-studio\/data\/tbank_official_logos\/logo2.png"
+    },
+    {
+      "width": 500,
+      "height": 500,
+      "id": 3,
+      "file_name": "..\/..\/label-studio\/data\/tbank_official_logos\/logo3.png"
+    },
+    {
+      "width": 500,
+      "height": 500,
+      "id": 4,
+      "file_name": "..\/..\/label-studio\/data\/tbank_official_logos\/logo4.png"
+    },
+    {
+      "width": 500,
+      "height": 500,
+      "id": 5,
+      "file_name": "..\/..\/label-studio\/data\/tbank_official_logos\/logo5.png"
+    },
+    {
+      "width": 500,
+      "height": 500,
+      "id": 6,
+      "file_name": "..\/..\/label-studio\/data\/tbank_official_logos\/logo6.png"
+    },
+    {
+      "width": 1108,
+      "height": 1108,
+      "id": 7,
+      "file_name": "..\/..\/label-studio\/data\/tbank_official_logos\/logo7.png"
+    },
+    {
+      "width": 1108,
+      "height": 1108,
+      "id": 8,
+      "file_name": "..\/..\/label-studio\/data\/tbank_official_logos\/logo8.png"
+    }
+  ],
+  "categories": [
+    {
+      "id": 0,
+      "name": "purple_shield_white_T"
+    },
+    {
+      "id": 1,
+      "name": "white_shield_black_T"
+    },
+    {
+      "id": 2,
+      "name": "yellow_shield_black_T"
+    }
+  ],
+  "annotations": [
+    {
+      "id": 0,
+      "image_id": 0,
+      "category_id": 2,
+      "segmentation": [],
+      "bbox": [
+        0.0,
+        0.0,
+        461.0,
+        461.99999999999994
+      ],
+      "ignore": 0,
+      "iscrowd": 0,
+      "area": 212981.99999999997
+    },
+    {
+      "id": 1,
+      "image_id": 1,
+      "category_id": 1,
+      "segmentation": [],
+      "bbox": [
+        9.880697050938338,
+        16.467828418230564,
+        330.2975871313673,
+        331.2386058981233
+      ],
+      "ignore": 0,
+      "iscrowd": 0,
+      "area": 109407.31229290803
+    },
+    {
+      "id": 2,
+      "image_id": 2,
+      "category_id": 2,
+      "segmentation": [],
+      "bbox": [
+        7.998659517426274,
+        10.351206434316353,
+        331.70911528150134,
+        331.23860589812335
+      ],
+      "ignore": 0,
+      "iscrowd": 0,
+      "area": 109874.86490954438
+    },
+    {
+      "id": 3,
+      "image_id": 3,
+      "category_id": 1,
+      "segmentation": [],
+      "bbox": [
+        110.58981233243966,
+        125.33512064343164,
+        279.4906166219839,
+        276.8096514745308
+      ],
+      "ignore": 0,
+      "iscrowd": 0,
+      "area": 77365.70017753309
+    },
+    {
+      "id": 4,
+      "image_id": 4,
+      "category_id": 1,
+      "segmentation": [],
+      "bbox": [
+        110.58981233243952,
+        123.99463806970505,
+        278.15013404825686,
+        277.47989276139407
+      ],
+      "ignore": 0,
+      "iscrowd": 0,
+      "area": 77181.0693672777
+    },
+    {
+      "id": 5,
+      "image_id": 5,
+      "category_id": 2,
+      "segmentation": [],
+      "bbox": [
+        109.91957104557642,
+        124.66487935656822,
+        278.82037533512056,
+        278.8203753351207
+      ],
+      "ignore": 0,
+      "iscrowd": 0,
+      "area": 77740.80170201753
+    },
+    {
+      "id": 6,
+      "image_id": 6,
+      "category_id": 0,
+      "segmentation": [],
+      "bbox": [
+        110.58981233243958,
+        125.33512064343122,
+        277.4798927613937,
+        278.82037533511937
+      ],
+      "ignore": 0,
+      "iscrowd": 0,
+      "area": 77367.04784768047
+    },
+    {
+      "id": 7,
+      "image_id": 7,
+      "category_id": 2,
+      "segmentation": [],
+      "bbox": [
+        245.06702412868592,
+        274.77211796246695,
+        617.8659517426272,
+        619.3512064343167
+      ],
+      "ignore": 0,
+      "iscrowd": 0,
+      "area": 382676.02262648346
+    },
+    {
+      "id": 8,
+      "image_id": 8,
+      "category_id": 2,
+      "segmentation": [],
+      "bbox": [
+        245.06702412868626,
+        276.25737265415546,
+        617.8659517426273,
+        617.8659517426273
+      ],
+      "ignore": 0,
+      "iscrowd": 0,
+      "area": 381758.3343228227
+    }
+  ],
+  "info": {
+    "year": 2025,
+    "version": "1.0",
+    "description": "",
+    "contributor": "Label Studio",
+    "url": "",
+    "date_created": "2025-09-16 23:18:48.793620"
+  }
+}
