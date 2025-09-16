@@ -1,6 +1,7 @@
 # ignore data
 data_sirius
 *.zip
+tbank_logo_detector_data
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
