@@ -11,7 +11,7 @@
 ## Список файлов
 Файлы хранятся в папке `tbank_official_logos/`. Ниже ссылки для просмотра (относительные пути в проекте d:/tinkoff/tbank_logo_detector):
 
-- ![logo0.png](/tbank_official_logos/logo0.png?raw=true&w=50) (Variant 0: Основной логотип T-Bank)
+- ![logo0.png]([/tbank_official_logos/logo0.png?raw=true&w=50](https://github.com/medphisiker/tbank_logo_detector/raw/data_prep/tbank_official_logos/logo0.png?w=200)) (Variant 0: Основной логотип T-Bank)
 - ![logo1.png](/tbank_official_logos/logo1.png) (Variant 1: Красная версия)
 - ![logo2.png](/tbank_official_logos/logo2.png) (Variant 2: Чёрная версия)
 - ![logo3.png](/tbank_official_logos/logo3.png) (Variant 3: Outline вариант)
