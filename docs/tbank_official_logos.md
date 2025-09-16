@@ -11,15 +11,15 @@
 ## Список файлов
 Файлы хранятся в папке `tbank_official_logos/`. Ниже ссылки для просмотра (относительные пути в проекте d:/tinkoff/tbank_logo_detector):
 
-- ![logo0.png]([/tbank_official_logos/logo0.png?raw=true&w=50](https://github.com/medphisiker/tbank_logo_detector/raw/data_prep/tbank_official_logos/logo0.png?w=200)) (Variant 0: Основной логотип T-Bank)
-- ![logo1.png](/tbank_official_logos/logo1.png) (Variant 1: Красная версия)
-- ![logo2.png](/tbank_official_logos/logo2.png) (Variant 2: Чёрная версия)
-- ![logo3.png](/tbank_official_logos/logo3.png) (Variant 3: Outline вариант)
-- ![logo4.png](/tbank_official_logos/logo4.png) (Variant 4: Градиент)
-- ![logo5.png](/tbank_official_logos/logo5.png) (Variant 5: Минималистичный)
-- ![logo6.png](/tbank_official_logos/logo6.png) (Variant 6: С тенью)
-- ![logo7.png](/tbank_official_logos/logo7.png) (Variant 7: Повёрнутый)
-- ![logo8.png](/tbank_official_logos/logo8.png) (Variant 8: Стилизованный)
+- ![logo0.png](/tbank_official_logos/logo0.png) (Variant 0)
+- ![logo1.png](/tbank_official_logos/logo1.png) (Variant 1)
+- ![logo2.png](/tbank_official_logos/logo2.png) (Variant 2)
+- ![logo3.png](/tbank_official_logos/logo3.png) (Variant 3)
+- ![logo4.png](/tbank_official_logos/logo4.png) (Variant 4)
+- ![logo5.png](/tbank_official_logos/logo5.png) (Variant 5)
+- ![logo6.png](/tbank_official_logos/logo6.png) (Variant 6)
+- ![logo7.png](/tbank_official_logos/logo7.png) (Variant 7)
+- ![logo8.png](/tbank_official_logos/logo8.png) (Variant 8)
 
 ## Анализ с QVQ-MAX
 
