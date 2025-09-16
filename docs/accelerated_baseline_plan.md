@@ -110,4 +110,7 @@
 - Метрики: Synth mAP>0.8, test F1>0.6 initial, >0.75 after доп.
 - Интеграция: Ссылки на docs/fast_solution.md (gen_synth), yoloe_analysis.md (YOLOE), service.md (API/Docker).
 
+Кстати самые ресурсоемкие задачи можно вынести на отдельные вычислители.
+Напрмер пока генерируется синтетика в Google Colab идет разметка от Grounding DINO и YOLOE.
+
 Готов к реализации. Версия 1.0.
