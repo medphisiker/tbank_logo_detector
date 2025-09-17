@@ -2,85 +2,135 @@
 """
 Скрипт для подготовки данных проекта tbank_logo_detector для загрузки в Google Colab.
 
-Создает архивы данных и перемещает их в специальную папку для удобной загрузки на Google Drive.
+Читает конфигурацию из data_config.json, где указаны поддиректории data/ (data_sirius, tbank_official_logos, data_synt) и лимиты файлов (null для всей папки, число для подвыборки).
+Создает отдельные ZIP архивы для указанных поддиректорий data/ (с возможной подвыборкой файлов для тестирования)
+и перемещает их в папку tbank_logo_detector_data для удобной загрузки на Google Drive.
+Это позволяет независимо обновлять и архивировать каждую поддиректорию с контролем объема данных.
 """
 
-import os
+import json
+import random
 import shutil
-import zipfile
-from pathlib import Path
 from datetime import datetime
+from pathlib import Path
+from typing import Optional, Dict
 
 
-def create_zip_archive(source_dir: str, zip_name: str, output_dir: str) -> str:
+def create_archive_for_subdir(
+    subdir: str,
+    project_root: Path,
+    colab_data_dir: Path,
+    limit: Optional[int] = None
+) -> Optional[str]:
     """
-    Создает ZIP архив из указанной директории.
+    Создает ZIP архив для указанной поддиректории, возможно с подвыборкой файлов.
 
     Args:
-        source_dir: Путь к исходной директории
-        zip_name: Имя ZIP файла (без расширения)
-        output_dir: Директория для сохранения архива
+        subdir: Имя поддиректории (относительно project_root)
+        project_root: Корневая директория проекта
+        colab_data_dir: Директория для сохранения архивов
+        limit: Максимальное количество файлов для включения (None для всех)
 
     Returns:
-        Путь к созданному архиву
+        Путь к созданному архиву или None, если не удалось создать
     """
-    source_path = Path(source_dir)
-    if not source_path.exists():
-        raise FileNotFoundError(f"Директория {source_dir} не найдена")
+    source_path = project_root / "data" / subdir
 
-    # Создаем имя архива с временной меткой
-    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-    zip_filename = f"{zip_name}_{timestamp}.zip"
-    zip_path = Path(output_dir) / zip_filename
+    if not (source_path.exists() and source_path.is_dir()):
+        print(f"⚠ Поддиректория {subdir} не найдена или не является директорией, пропускаем")
+        return None
 
-    print(f"Создание архива: {zip_path}")
-    print(f"Исходная директория: {source_path}")
+    try:
+        print(f"\nОбработка поддиректории: {subdir}")
 
-    # Создаем ZIP архив
-    with zipfile.ZipFile(zip_path, 'w', zipfile.ZIP_DEFLATED) as zip_file:
-        for file_path in source_path.rglob('*'):
-            if file_path.is_file():
-                # Добавляем файл в архив с относительным путем
-                arcname = file_path.relative_to(source_path.parent)
-                zip_file.write(file_path, arcname)
-                print(f"  Добавлен: {arcname}")
+        # Создаем имя архива с временной меткой
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        zip_base_name = colab_data_dir / f"{subdir}_{timestamp}"
 
-    archive_size = zip_path.stat().st_size / (1024 * 1024)  # Размер в МБ
-    print(f"Размер архива: {archive_size:.1f} МБ")
-    return str(zip_path)
+        if limit is None:
+            # Архивируем всю директорию
+            print(f"Создание архива: {zip_base_name}.zip")
+            print(f"Исходная директория: {source_path}")
+            
+            shutil.make_archive(str(zip_base_name), 'zip', str(source_path))
+            
+            zip_path = zip_base_name.with_suffix('.zip')
+        else:
+            # Подвыборка файлов
+            all_files = list(source_path.rglob('*'))
+            files_to_include = [f for f in all_files if f.is_file()]
+            
+            num_files = len(files_to_include)
+            if limit >= num_files:
+                print(f"Лимит {limit} >= {num_files}, архивируем все файлы")
+                limit = None  # Фолбэк на полный архив
+                shutil.make_archive(str(zip_base_name), 'zip', str(source_path))
+                zip_path = zip_base_name.with_suffix('.zip')
+            else:
+                random.seed(42)  # Для воспроизводимости
+                selected_files = random.sample(files_to_include, limit)
+                print(f"Выбрано {limit} файлов из {num_files} для архивирования")
+                
+                temp_dir = colab_data_dir / f"temp_{subdir}_{timestamp}"
+                temp_dir.mkdir(exist_ok=True)
+                
+                for file_path in selected_files:
+                    rel_path = file_path.relative_to(source_path)
+                    dest_path = temp_dir / rel_path
+                    dest_path.parent.mkdir(parents=True, exist_ok=True)
+                    shutil.copy2(file_path, dest_path)
+                    print(f"  Скопирован: {rel_path}")
+                
+                # Архивируем temp_dir
+                shutil.make_archive(str(zip_base_name), 'zip', str(temp_dir))
+                shutil.rmtree(temp_dir)  # Очищаем временную директорию
+                
+                zip_path = zip_base_name.with_suffix('.zip')
+
+        archive_size = zip_path.stat().st_size / (1024 * 1024)  # Размер в МБ
+        print(f"Размер архива: {archive_size:.1f} МБ")
+        
+        print(f"✓ Архив создан: {zip_path.name}")
+        
+        return str(zip_path)
+        
+    except Exception as e:
+        print(f"✗ Ошибка при создании архива для {subdir}: {e}")
+        return None
 
 
 def prepare_data_for_colab():
     """
     Основная функция подготовки данных для Google Colab.
+
+    Читает data_config.json и создает ZIP архивы на основе конфигурации.
     """
     project_root = Path.cwd()
 
     # Создаем папку для данных Colab
     colab_data_dir = project_root / "tbank_logo_detector_data"
     colab_data_dir.mkdir(exist_ok=True)
-    print(f"Создана папка: {colab_data_dir}")
+    print(f"Создана/использована папка: {colab_data_dir}")
 
-    # Список директорий для архивирования
-    data_dirs = [
-        ("data", "data")
-    ]
+    # Читаем конфигурацию
+    config_path = project_root / "data_config.json"
+    if not config_path.exists():
+        print("❌ Файл data_config.json не найден, создайте его с конфигурацией поддиректорий")
+        return []
+
+    try:
+        with open(config_path, 'r', encoding='utf-8') as f:
+            config: Dict[str, Optional[int]] = json.load(f)
+    except json.JSONDecodeError as e:
+        print(f"❌ Ошибка чтения data_config.json: {e}")
+        return []
 
     created_archives = []
 
-    for source_dir, zip_name in data_dirs:
-        source_path = project_root / source_dir
-
-        if source_path.exists():
-            try:
-                print(f"\nОбработка директории: {source_dir}")
-                zip_path = create_zip_archive(str(source_path), zip_name, str(colab_data_dir))
-                created_archives.append(zip_path)
-                print(f"✓ Архив создан: {Path(zip_path).name}")
-            except Exception as e:
-                print(f"✗ Ошибка при создании архива для {source_dir}: {e}")
-        else:
-            print(f"⚠ Директория {source_dir} не найдена, пропускаем")
+    for subdir, limit in config.items():
+        archive = create_archive_for_subdir(subdir, project_root, colab_data_dir, limit=limit)
+        if archive:
+            created_archives.append(archive)
 
     # Вывод итоговой информации
     print(f"\n{'='*50}")
@@ -96,7 +146,7 @@ def prepare_data_for_colab():
         print("\n📁 Загрузите папку tbank_logo_detector_data на Google Drive")
         print("📓 Затем подключите ее к Google Colab для работы с YOLOE и GROUNDING DINO")
     else:
-        print("❌ Не удалось создать ни одного архива")
+        print("❌ Не удалось создать ни одного архива (проверьте конфигурацию и наличие поддиректорий)")
 
     return created_archives
 
@@ -112,8 +162,8 @@ def main():
             print("\n✅ Подготовка данных завершена успешно!")
             return 0
         else:
-            print("\n❌ Подготовка данных завершена с ошибками")
-            return 1
+            print("\n⚠ Подготовка данных завершена, но архивы не созданы (проверьте data_config.json)")
+            return 0  # Не ошибка, если директории отсутствуют
     except Exception as e:
         print(f"\n❌ Критическая ошибка: {e}")
         return 1
