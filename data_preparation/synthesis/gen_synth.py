@@ -2,6 +2,7 @@
 import os
 import random
 import json
+import argparse
 from PIL import Image, ImageEnhance
 try:
     import albumentations as A
@@ -11,13 +12,21 @@ except ImportError:
 import numpy as np
 from pathlib import Path
 
+# Parse arguments
+parser = argparse.ArgumentParser(description="Generate synthetic T-Bank logo images")
+parser.add_argument("--N", type=int, default=20, help="Number of synthetic images to generate (default: 20)")
+args = parser.parse_args()
+
+# Set env var for consistency
+os.environ['N'] = str(args.N)
+
 script_dir = Path(__file__).parent
 
 # Paths
 crops_dir = script_dir / "crops"
 bg_dir = script_dir / "backgrounds"
 out_base = Path("/app/data") / "data_synt"
-N = int(os.getenv('N', 20))  # Total synthetic images, set via env var for testing
+N = int(os.getenv('N', 20))  # Total synthetic images, from arg or env var
 
 # Debug prints
 print(f"Script dir: {script_dir}")
