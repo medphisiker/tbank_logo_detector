@@ -2,9 +2,7 @@ import os
 import json
 from PIL import Image
 
-from .paths import PSEUDO_COCO, LABELS_DIR
-
-def export_to_coco(img_dir):
+def export_to_coco(img_dir, labels_dir, output_path):
     names = ['purple_shield_white_T', 'white_shield_black_T', 'yellow_shield_black_T']
     coco = {
         'info': {'description': 'YOLOE pseudo labels for tbank data_sirius'},
@@ -25,7 +23,7 @@ def export_to_coco(img_dir):
             coco['images'].append({'id': image_id, 'file_name': rel_path, 'width': w, 'height': h})
             txt_file = file.rsplit('.',1)[0] + '.txt'
             rel_txt = os.path.relpath(os.path.join(root, txt_file), img_dir)
-            txt_path = os.path.join(LABELS_DIR, rel_txt)
+            txt_path = os.path.join(labels_dir, rel_txt)
             if os.path.exists(txt_path):
                 with open(txt_path, 'r') as f:
                     for line in f:
@@ -48,6 +46,6 @@ def export_to_coco(img_dir):
                         ann_id += 1
             image_id += 1
     
-    with open(PSEUDO_COCO, 'w') as f:
+    with open(output_path, 'w') as f:
         json.dump(coco, f)
-    print(f'Exported to {PSEUDO_COCO}')
+    print(f'Exported to {output_path}')

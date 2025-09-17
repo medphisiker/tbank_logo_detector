@@ -1,16 +1,14 @@
 # YOLOE Package
 
-Этот пакет предназначен для автоматической разметки данных логотипов Т-Банка с использованием модели YOLOE в локальной среде (Windows/Linux/Mac).
+Этот пакет предназначен для автоматической разметки данных логотипов Т-Банка с использованием модели YOLOE в локальной среде (Windows/Linux/Mac). Интегрирован с tbank_yoloe_bulk_inference.py для конфигурации через config.json.
 
 ## Структура пакета
 
-- `paths.py`: Константы и пути к файлам (INPUT_IMAGES_DIR, REFS_LOCAL и т.д.).
 - `prepare_data.py`: Подготовка изображений из директории (с опциональным subset).
 - `yolo_predict.py`: Загрузка модели YOLOE, подготовка промптов и выполнение предикта (recursive=True для поддиректорий).
 - `export_coco.py`: Экспорт результатов предикта в COCO формат (pseudo_coco.json) с os.walk для рекурсивной структуры.
 - `save_results.py`: Сохранение результатов (JSON и ZIP архива runs) в OUTPUT_DIR.
-- `main.py`: Основной скрипт для оркестрации всего процесса.
-- `__init__.py`: Пустой файл для Python пакета.
+- `__init__.py`: Экспорт функций пакета.
 
 ## Установка и использование
 
@@ -25,30 +23,39 @@
    ```
    - Для GPU: убедитесь, что CUDA установлен и torch поддерживает GPU.
 
-3. **Добавьте путь к пакету** (если запускаете из другого места):
-   ```
-   import sys
-   sys.path.append('data_preparation/yoloe/colab_package')
+3. **Настройте config.json** (в корне yoloe):
+   ```json
+   {
+     "input_dir": "data/data_sirius/images",
+     "refs_json": "data/tbank_official_logos/refs_ls_coco.json",
+     "output_dir": "yoloe_results",
+     "subset": null,
+     "conf": 0.5,
+     "iou": 0.7,
+     "runs_dir": "runs/yoloe_predict",
+     "device": "auto"
+   }
    ```
 
 4. **Запустите пакет**:
    ```
-   from colab_package.main import main
-   main()
+   cd data_preparation/yoloe
+   python tbank_yoloe_bulk_inference.py
    ```
-   Или напрямую:
+   Или из другого места с CONFIG_PATH:
    ```
-   cd data_preparation/yoloe/colab_package
-   python main.py
+   python data_preparation/yoloe/tbank_yoloe_bulk_inference.py
    ```
 
 ## Настройка
 
-- В `paths.py`:
-  - `SUBSET = None` для полного датасета или число (e.g. 10) для подмножества.
-  - `OUTPUT_DIR = 'yoloe_results/'` - директория для результатов.
+- В `config.json`:
+  - `subset`: null для полного датасета или число (e.g. 10) для подмножества.
+  - `output_dir`: директория для результатов (e.g. "yoloe_results").
+  - `conf`, `iou`: пороги уверенности и IoU.
+  - `device`: "auto", "cpu" или "cuda".
 
-- Модель: 'yoloe-l-seg.pt' (скачивается автоматически при первом запуске).
+- Модель: 'yoloe-11l-seg.pt' (скачивается автоматически при первом запуске).
 
 ## Выходные файлы
 

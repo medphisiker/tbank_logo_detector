@@ -1,6 +1,5 @@
 import json
 import os
-from pathlib import Path
 from yoloe_package import prepare_data, run_yolo_predict, export_to_coco, save_results
 
 def main():
@@ -28,7 +27,8 @@ def main():
 
     # Export COCO
     pseudo_coco = os.path.join(output_dir, 'pseudo_coco.json')
-    export_to_coco(img_dir, runs_dir, pseudo_coco)
+    labels_dir = os.path.join(runs_dir, 'predict', 'labels')
+    export_to_coco(img_dir, labels_dir, pseudo_coco)
 
     # Save results
     save_results(output_dir, runs_dir)

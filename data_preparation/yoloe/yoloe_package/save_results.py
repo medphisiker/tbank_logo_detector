@@ -1,12 +1,10 @@
 import os
 import shutil
 
-from .paths import OUTPUT_DIR, PSEUDO_COCO, RUNS_DIR
-
-def save_results(output_dir):
+def save_results(output_dir, runs_dir):
     os.makedirs(output_dir, exist_ok=True)
-    # PSEUDO_COCO already in OUTPUT_DIR, no copy needed
+    # PSEUDO_COCO already saved to output_dir in export_coco
     # Zip runs
     zip_path = os.path.join(output_dir, 'runs_yoloe.zip')
-    shutil.make_archive(zip_path[:-4], 'zip', RUNS_DIR)
+    shutil.make_archive(zip_path[:-4], 'zip', runs_dir)
     print(f'Saved results to {output_dir}: pseudo_coco.json and runs_yoloe.zip')

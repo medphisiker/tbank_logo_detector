@@ -2,10 +2,8 @@ import os
 import shutil
 from glob import glob
 
-from .paths import INPUT_IMAGES_DIR, SUBSET
-
-def prepare_data(subset=None):
-    img_dir = INPUT_IMAGES_DIR
+def prepare_data(input_dir, subset=None):
+    img_dir = input_dir
     if not os.path.exists(img_dir):
         raise ValueError(f"Input images directory not found: {img_dir}")
     

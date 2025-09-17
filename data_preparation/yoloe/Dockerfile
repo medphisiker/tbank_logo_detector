@@ -26,4 +26,4 @@ COPY . /app/yoloe
 WORKDIR /app/yoloe
 
 # Run the main script (assumes data volume mounted at /app/data)
-CMD ["python", "yoloe_package/main.py"]
+CMD ["python", "tbank_yoloe_bulk_inference.py"]
