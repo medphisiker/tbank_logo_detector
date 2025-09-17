@@ -1,36 +1,39 @@
-import argparse
+import json
 import os
 from pathlib import Path
 from yoloe_package import prepare_data, run_yolo_predict, export_to_coco, save_results
 
 def main():
-    parser = argparse.ArgumentParser(description='YOLOE Bulk Inference for T-Bank Logos')
-    parser.add_argument('--input_dir', type=str, default='data/data_sirius/images', help='Input images directory')
-    parser.add_argument('--refs_json', type=str, default='data/tbank_official_logos/refs_ls_coco.json', help='Reference COCO JSON')
-    parser.add_argument('--output_dir', type=str, default='yoloe_results', help='Output directory')
-    parser.add_argument('--subset', type=int, default=None, help='Subset number of images (None for all)')
-    parser.add_argument('--conf', type=float, default=0.5, help='Confidence threshold')
-    parser.add_argument('--iou', type=float, default=0.7, help='IOU threshold')
-    parser.add_argument('--runs_dir', type=str, default='runs/yoloe_predict', help='Runs directory for labels')
-    parser.add_argument('--device', type=str, default='auto', help='Device (auto, cpu, 0)')
-    args = parser.parse_args()
+    config_path = os.getenv('CONFIG_PATH', 'config.json')
+    with open(config_path, 'r') as f:
+        config = json.load(f)
 
-    os.makedirs(args.output_dir, exist_ok=True)
-    os.makedirs(args.runs_dir, exist_ok=True)
+    input_dir = config.get('input_dir', 'data/data_sirius/images')
+    refs_json = config.get('refs_json', 'data/tbank_official_logos/refs_ls_coco.json')
+    output_dir = config.get('output_dir', 'yoloe_results')
+    subset = config.get('subset')
+    conf = config.get('conf', 0.5)
+    iou = config.get('iou', 0.7)
+    runs_dir = config.get('runs_dir', 'runs/yoloe_predict')
+    device = config.get('device', 'auto')
+
+    os.makedirs(output_dir, exist_ok=True)
+    os.makedirs(runs_dir, exist_ok=True)
 
     # Prepare data
-    img_dir = prepare_data(args.input_dir, args.subset)
+    img_dir = prepare_data(input_dir, subset)
 
     # Run prediction
-    results = run_yolo_predict(img_dir, args.refs_json, args.runs_dir, args.conf, args.iou, args.device)
+    results = run_yolo_predict(img_dir, refs_json, runs_dir, conf, iou, device)
 
     # Export COCO
-    export_to_coco(img_dir, args.runs_dir, args.output_dir + '/pseudo_coco.json')
+    pseudo_coco = os.path.join(output_dir, 'pseudo_coco.json')
+    export_to_coco(img_dir, runs_dir, pseudo_coco)
 
     # Save results
-    save_results(args.output_dir, args.runs_dir)
+    save_results(output_dir, runs_dir)
 
-    print(f"Bulk inference completed. Results in {args.output_dir}")
+    print(f"Bulk inference completed. Results in {output_dir}")
 
 if __name__ == "__main__":
     main()
