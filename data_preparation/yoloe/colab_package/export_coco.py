@@ -5,9 +5,9 @@ from PIL import Image
 from .paths import PSEUDO_COCO, LABELS_DIR
 
 def export_to_coco(img_dir):
-    names = ['yellow_shield_black_T', 'white_shield_black_T', 'purple_shield_white_T']
+    names = ['purple_shield_white_T', 'white_shield_black_T', 'yellow_shield_black_T']
     coco = {
-        'info': {'description': 'YOLOE pseudo labels for all datasets'},
+        'info': {'description': 'YOLOE pseudo labels for tbank data_sirius'},
         'licenses': [],
         'images': [],
         'annotations': [],
@@ -20,11 +20,9 @@ def export_to_coco(img_dir):
             if not file.lower().endswith(('.jpg', '.png', '.jpeg')): continue
             img_path = os.path.join(root, file)
             rel_path = os.path.relpath(img_path, img_dir)
-            # Add image
             with Image.open(img_path) as img:
                 w, h = img.size
             coco['images'].append({'id': image_id, 'file_name': rel_path, 'width': w, 'height': h})
-            # Load txt if exists (mirrors structure)
             txt_file = file.rsplit('.',1)[0] + '.txt'
             rel_txt = os.path.relpath(os.path.join(root, txt_file), img_dir)
             txt_path = os.path.join(LABELS_DIR, rel_txt)
@@ -52,4 +50,4 @@ def export_to_coco(img_dir):
     
     with open(PSEUDO_COCO, 'w') as f:
         json.dump(coco, f)
-    print('Exported ' + PSEUDO_COCO)
+    print(f'Exported to {PSEUDO_COCO}')

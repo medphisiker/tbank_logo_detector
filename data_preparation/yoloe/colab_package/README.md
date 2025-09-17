@@ -1,70 +1,62 @@
-# YOLOE Colab Package
+# YOLOE Local Package
 
-Этот пакет предназначен для автоматической разметки данных логотипов Т-Банка с использованием модели YOLOE в Google Colab.
+Этот пакет предназначен для автоматической разметки данных логотипов Т-Банка с использованием модели YOLOE в локальной среде (Windows/Linux/Mac).
 
 ## Структура пакета
 
-- `paths.py`: Константы и пути к файлам (GDRIVE_BASE, ZIP_FILES и т.д.).
-- `prepare_data.py`: Разархивирование архивов из Google Drive и создание subset изображений (рекурсивно).
-- `yolo_predict.py`: Загрузка модели YOLOE, подготовка промптов и выполнение предикта (с recursive=True для поддиректорий).
+- `paths.py`: Константы и пути к файлам (INPUT_IMAGES_DIR, REFS_LOCAL и т.д.).
+- `prepare_data.py`: Подготовка изображений из директории (с опциональным subset).
+- `yolo_predict.py`: Загрузка модели YOLOE, подготовка промптов и выполнение предикта (recursive=True для поддиректорий).
 - `export_coco.py`: Экспорт результатов предикта в COCO формат (pseudo_coco.json) с os.walk для рекурсивной структуры.
-- `save_results.py`: Сохранение результатов в Google Drive (копирование JSON и ZIP архива runs).
-- `main.py`: Основной скрипт для оркестрации всего процесса, с функцией main().
+- `save_results.py`: Сохранение результатов (JSON и ZIP архива runs) в OUTPUT_DIR.
+- `main.py`: Основной скрипт для оркестрации всего процесса.
 - `__init__.py`: Пустой файл для Python пакета.
 
-## Установка и использование в Google Colab
+## Установка и использование
 
-1. **Подключите Google Drive вручную**:
+1. **Убедитесь в наличии данных**:
+   - `data/data_sirius/images/` - изображения для разметки (поддерживает рекурсивную структуру).
+   - `data/tbank_official_logos/refs_ls_coco.json` - COCO разметка референсных логотипов.
+   - `data/tbank_official_logos/images/` - референсные изображения (используются косвенно через bbox в JSON).
+
+2. **Установите зависимости** (рекомендуется в виртуальном окружении):
    ```
-   from google.colab import drive
-   drive.mount('/content/drive')
+   pip install ultralytics torch torchvision pillow numpy opencv-python pycocotools
    ```
+   - Для GPU: убедитесь, что CUDA установлен и torch поддерживает GPU.
 
-2. **Скопируйте пакет в Colab** (через файлы или git):
-   - Загрузите папку `colab_package` в /content/colab_package.
-
-3. **Добавьте путь к пакету**:
+3. **Добавьте путь к пакету** (если запускаете из другого места):
    ```
    import sys
-   sys.path.append('/content/colab_package')
+   sys.path.append('data_preparation/yoloe/colab_package')
    ```
 
-4. **Установите зависимости**:
-   ```
-   !pip install -U ultralytics pycocotools opencv-python pillow numpy google-colab --quiet
-   ```
-
-5. **Запустите пакет**:
+4. **Запустите пакет**:
    ```
    from colab_package.main import main
    main()
    ```
-   Или запустите main.py напрямую:
+   Или напрямую:
    ```
-   %run colab_package/main.py
+   cd data_preparation/yoloe/colab_package
+   python main.py
    ```
-
-## Предварительные требования
-
-- В Google Drive по пути `/content/drive/MyDrive/tbank_logo_detector_data/` разместите архивы:
-  - `data_sirius.zip`
-  - `data_synt.zip`
-  - `tbank_official_logos.zip` (с refs_ls_coco.json внутри)
-
-- Опционально: `small_gt_coco.json` для оценки mAP (раскомментируйте в save_results.py или добавьте отдельный скрипт).
 
 ## Настройка
 
-- В `paths.py` измените `SUBSET = None` на число для подмножества изображений (e.g. 100).
-- `GDRIVE_BASE` - путь к данным в Drive.
+- В `paths.py`:
+  - `SUBSET = None` для полного датасета или число (e.g. 10) для подмножества.
+  - `OUTPUT_DIR = 'yoloe_results/'` - директория для результатов.
+
+- Модель: 'yoloe-l-seg.pt' (скачивается автоматически при первом запуске).
 
 ## Выходные файлы
 
-- `pseudo_coco.json`: Псевдо-аннотации в COCO формате.
-- `runs_colab.zip`: Архив с TXT labels и изображениями с bbox (в OUTPUT_DIR).
+- `yoloe_results/pseudo_coco.json`: Псевдо-аннотации в COCO формате для data_sirius.
+- `yoloe_results/runs_yoloe.zip`: Архив с TXT labels и изображениями с bbox.
 
 ## Оценка mAP (опционально)
 
-В save_results.py раскомментируйте секцию для COCOeval, если есть GT COCO.
+Добавьте GT COCO (e.g. small_gt_coco.json) и используйте pycocotools для оценки в save_results.py.
 
-Пакет готов к использованию без установки - просто импортируйте и запустите.
+Пакет готов к использованию без дополнительной установки.

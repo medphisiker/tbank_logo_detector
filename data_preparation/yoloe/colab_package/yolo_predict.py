@@ -12,7 +12,7 @@ def run_yolo_predict(img_dir):
     with open(REFS_LOCAL, 'r') as f:
         refs_data = json.load(f)
     
-    # Group bboxes/cls by class (0-2, assume grouped in LS)
+    # Group bboxes/cls by class (0=purple, 1=white, 2=yellow)
     grouped_bboxes = {}
     grouped_cls = np.array([0,1,2])  # For multi-class
     for ann in refs_data['annotations']:
@@ -25,9 +25,9 @@ def run_yolo_predict(img_dir):
     
     visual_prompts = {'bboxes': np.array(grouped_bboxes), 'cls': grouped_cls}
     
-    # Text prompts
-    names = ['yellow_shield_black_T', 'white_shield_black_T', 'purple_shield_white_T']
-    text_prompts = ['yellow shield with black T logo', 'white shield with black T logo', 'purple shield with white T logo']
+    # Text prompts matching category ids
+    names = ['purple_shield_white_T', 'white_shield_black_T', 'yellow_shield_black_T']
+    text_prompts = ['purple shield with white T logo', 'white shield with black T logo', 'yellow shield with black T logo']
     model.set_classes(names, text_prompts)  # Hybrid
     
     results = model.predict(
@@ -37,8 +37,9 @@ def run_yolo_predict(img_dir):
         iou=0.7,
         save_txt=True,
         project=RUNS_DIR,
+        name='predict',
         recursive=True,
-        device=0 if torch.cuda.is_available() else 'cpu'
+        device='auto'  # Auto-detect GPU/CPU
     )
     print('Prediction complete. Results in ' + RUNS_DIR + '/')
     return results
