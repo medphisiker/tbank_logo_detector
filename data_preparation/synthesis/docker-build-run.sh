@@ -1,6 +1,9 @@
 #!/bin/bash
 
-# Docker build and run for synthesis test (small N=10)
+# Docker pull and run for synthesis test (small N=10) with pre-built image
 
-docker build -t tbank-synth .. 
-docker run -v $(pwd)/data_preparation/synthesis:/app/synthesis -v $(pwd)/data:/app/data --rm tbank-synth python gen_synth.py --N 10
+# Альтернатива: Соберите свой образ
+# docker build -t tbank-synth -f Dockerfile .
+
+docker pull medphisiker/tbank-synth:latest
+docker run -v "$(pwd):/app/synthesis" -v "$(pwd)/../../data:/app/data" --rm medphisiker/tbank-synth python gen_synth.py --N 10
