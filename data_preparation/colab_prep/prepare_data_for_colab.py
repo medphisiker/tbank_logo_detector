@@ -113,7 +113,7 @@ def prepare_data_for_colab():
     print(f"Создана/использована папка: {colab_data_dir}")
 
     # Читаем конфигурацию
-    config_path = project_root / "data_config.json"
+    config_path = project_root / "data_preparation" / "colab_prep" / "data_config.json"
     if not config_path.exists():
         print("❌ Файл data_config.json не найден, создайте его с конфигурацией поддиректорий")
         return []
