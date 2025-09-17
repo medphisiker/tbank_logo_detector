@@ -3,12 +3,8 @@ import os
 import random
 import json
 import argparse
-from PIL import Image, ImageEnhance
-try:
-    import albumentations as A
-    use_alb = True
-except ImportError:
-    use_alb = False
+import albumentations as A
+from PIL import Image
 import numpy as np
 from pathlib import Path
 
@@ -41,15 +37,12 @@ for split in ['train', 'val', 'test']:
     (Path(out_base) / 'labels' / split).mkdir(parents=True, exist_ok=True)
 
 # Augmentations
-if use_alb:
-    aug = A.Compose([
-        A.RandomBrightnessContrast(p=0.7, brightness_limit=0.3, contrast_limit=0.3),
-        A.GaussNoise(p=0.3),
-        A.MotionBlur(p=0.2),
-        A.HueSaturationValue(p=0.6, hue_shift_limit=15),
-    ])
-else:
-    aug = None  # Fallback to PIL: brightness/contrast only
+aug = A.Compose([
+    A.RandomBrightnessContrast(p=0.7, brightness_limit=0.3, contrast_limit=0.3),
+    A.GaussNoise(p=0.3),
+    A.MotionBlur(p=0.2),
+    A.HueSaturationValue(p=0.6, hue_shift_limit=15),
+])
 
 # Load crops by class (purple:0, white:1, yellow:2)
 crops_by_class = {0: [], 1: [], 2: []}
@@ -97,16 +90,9 @@ for i in range(N):
     out.paste(ref_t, (x, y), ref_t)
 
     # Augment
-    if use_alb:
-        arr = np.array(out)
-        auged = aug(image=arr)['image']
-        out = Image.fromarray(auged)
-    else:
-        # PIL fallback: brightness and contrast (simple, no noise/blur)
-        factor_b = random.uniform(0.7, 1.3)
-        out = ImageEnhance.Brightness(out).enhance(factor_b)
-        factor_c = random.uniform(0.7, 1.3)
-        out = ImageEnhance.Contrast(out).enhance(factor_c)
+    arr = np.array(out)
+    auged = aug(image=arr)['image']
+    out = Image.fromarray(auged)
 
     # Split assignment (80/10/10)
     if i < 0.8 * N:
