@@ -16,8 +16,15 @@ script_dir = Path(__file__).parent
 # Paths
 crops_dir = script_dir / "crops"
 bg_dir = script_dir / "backgrounds"
-out_base = script_dir.parent.parent / "data" / "data_synt"
+out_base = Path("/app/data") / "data_synt"
 N = int(os.getenv('N', 20))  # Total synthetic images, set via env var for testing
+
+# Debug prints
+print(f"Script dir: {script_dir}")
+print(f"Crops dir: {crops_dir}")
+print(f"Bg dir: {bg_dir}")
+print(f"Out base: {out_base}")
+print(f"N: {N}")
 
 # Create output dirs
 for split in ['train', 'val', 'test']:
@@ -64,6 +71,10 @@ for i in range(N):
     crop_path = random.choice(crops_by_class[cls])
     ref = Image.open(crop_path).convert("RGBA")
 
+    print(f"Crops by class: {crops_by_class}")
+    print(f"Number of bgs: {len(bgs)}")
+    print(f"Bgs sample: {bgs[:3] if bgs else 'None'}")
+
     # Random scale and rotate
     scale = random.uniform(0.15, 0.45)
     nw = int(W * scale)
@@ -98,7 +109,12 @@ for i in range(N):
 
     fname = f"synth_{i:05d}.jpg"
     out_path = Path(out_base) / 'images' / split / fname
-    out.save(out_path, quality=90)
+    print(f"Saving image to: {out_path}")
+    try:
+        out.save(out_path, quality=90)
+        print(f"Saved image: {out_path.exists()}")
+    except Exception as e:
+        print(f"Error saving image: {e}")
 
     # YOLO label
     cx = (x + ref_t.width / 2) / W
@@ -106,7 +122,9 @@ for i in range(N):
     bw = ref_t.width / W
     bh = ref_t.height / H
     lbl_path = Path(out_base) / 'labels' / split / fname.replace('.jpg', '.txt')
+    print(f"Saving label to: {lbl_path}")
     with open(lbl_path, 'w') as f:
         f.write(f"{cls} {cx:.6f} {cy:.6f} {bw:.6f} {bh:.6f}\n")
+    print(f"Saved label: {lbl_path.exists()}")
 
 print(f"Generated {N} synthetic images: {int(0.8*N)} train, {int(0.1*N)} val, {int(0.1*N)} test in {out_base}")

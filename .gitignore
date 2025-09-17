@@ -1,7 +1,7 @@
 # ignore data
-data_sirius
 *.zip
-tbank_logo_detector_data
+data/data_sirius
+data/data_synt
 
 # Ignore synthesis data folders
 /data_preparation/synthesis/backgrounds/
