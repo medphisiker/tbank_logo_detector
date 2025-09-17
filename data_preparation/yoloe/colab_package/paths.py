@@ -1,0 +1,11 @@
+GDRIVE_BASE = '/content/drive/MyDrive/tbank_logo_detector_data/'
+ZIP_FILES = ['data_sirius.zip', 'data_synt.zip', 'tbank_official_logos.zip']
+OUTPUT_DIR = GDRIVE_BASE + 'yoloe_results/'
+SUBSET = None  # None for full dataset, or int e.g. 10 for first 10 images (for testing)
+DATA_DIR = '/content/data'
+REFS_LOCAL = '/content/data/tbank_official_logos/refs_ls_coco.json'
+EXAMPLE_LOCAL = '/content/data/tbank_official_logos/images/example_ref.jpg'  # Optional, adjust if exists
+PSEUDO_COCO = '/content/pseudo_coco.json'
+RUNS_DIR = '/content/runs/colab_predict'
+LABELS_DIR = RUNS_DIR + '/labels'
+GT_COCO_LOCAL = '/content/small_gt_coco.json'
