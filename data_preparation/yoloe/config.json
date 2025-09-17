@@ -2,7 +2,7 @@
   "input_dir": "data/data_sirius/images",
   "refs_json": "data/tbank_official_logos/refs_ls_coco.json",
   "output_dir": "yoloe_results",
-  "subset": null,
+  "subset": 10,
   "conf": 0.5,
   "iou": 0.7,
   "runs_dir": "runs/yoloe_predict",
