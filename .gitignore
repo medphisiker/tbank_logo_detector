@@ -3,6 +3,10 @@ data_sirius
 *.zip
 tbank_logo_detector_data
 
+# Ignore synthesis data folders
+/data_preparation/synthesis/backgrounds/
+/data_preparation/synthesis/crops/
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[codz]
@@ -74,3 +78,5 @@ venv.bak/
 
 # PyPI configuration file
 .pypirc
+/data_preparation/synthesis/backgrounds/
+/data_preparation/synthesis/crops/
