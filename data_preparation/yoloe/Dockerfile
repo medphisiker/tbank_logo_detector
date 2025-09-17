@@ -14,10 +14,10 @@ WORKDIR /app
 COPY pyproject.toml ./
 
 # Install Python with uv, create venv, install dependencies
-RUN uv python install 3.13
-RUN uv venv --python 3.13
+RUN /root/.cargo/bin/uv python install 3.13
+RUN /root/.cargo/bin/uv venv --python 3.13
 ENV PATH="/app/.venv/bin:$PATH"
-RUN uv sync --frozen
+RUN /root/.cargo/bin/uv sync --frozen
 
 # Copy the yoloe project
 COPY . /app/yoloe

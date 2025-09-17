@@ -1,7 +1,6 @@
 from ultralytics import YOLOE
 import numpy as np
 import json
-import torch
 
 def run_yolo_predict(img_dir, refs_json, runs_dir, conf=0.5, iou=0.7, device='auto'):
     model = YOLOE('yoloe-11l-seg.pt')
@@ -39,7 +38,8 @@ def run_yolo_predict(img_dir, refs_json, runs_dir, conf=0.5, iou=0.7, device='au
     # Text prompts matching category ids
     names = ['purple_shield_white_T', 'white_shield_black_T', 'yellow_shield_black_T']
     text_prompts = ['purple shield with white T logo', 'white shield with black T logo', 'yellow shield with black T logo']
-    model.set_classes(names, text_prompts)  # Hybrid
+    text_pe = model.get_text_pe(text_prompts)
+    model.set_classes(names, text_pe)  # Hybrid
     
     results = model.predict(
         source=img_dir,
