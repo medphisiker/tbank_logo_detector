@@ -63,8 +63,7 @@ def prepare_data_for_colab():
 
     # Список директорий для архивирования
     data_dirs = [
-        ("data/tbank_official_logos", "tbank_official_logos"),
-        ("data/data_sirius", "data_sirius")
+        ("data", "data")
     ]
 
     created_archives = []

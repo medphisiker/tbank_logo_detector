@@ -16,10 +16,12 @@ Label Studio будет запущен в Docker-контейнере с мон�
 
 2. Запустите контейнер Label Studio с монтированием volumes и переменной окружения для локального хранения:
    ```
-   docker run -it -p 8080:8080 -v "${PWD}/tbank_official_logos:/label-studio/data/tbank_official_logos" -v "${PWD}/data_sirius:/label-studio/data/data_sirius" -v label_studio_data:/label-studio/data --env LOCAL_FILES_SERVING_ENABLED=true heartexlabs/label-studio:1.20.0
+   docker run -it -p 8080:8080 -v "${PWD}/data:/label-studio/data/local" -v label_studio_data:/label-studio/data --env LOCAL_FILES_SERVING_ENABLED=true heartexlabs/label-studio:1.20.0
    ```
    - `-p 8080:8080`: Прокидывает порт для доступа к UI.
-   - `-v ...:/label-studio/data/...`: Монтирует локальные папки в контейнер (доступны как `/label-studio/data/tbank_official_logos` и `/label-studio/data/data_sirius` внутри контейнера).
+   - `-v "${PWD}/data:/label-studio/data/local"`: Монтирует папку `data` в контейнер как `/label-studio/data/local` (системные файлы LS остаются в контейнере).
+     - Картинки из датасета: `/label-studio/data/local/data_sirius/images/`
+     - Референсные логотипы: `/label-studio/data/local/tbank_official_logos/images/`
    - `-v label_studio_data:/label-studio/data`: Создаёт volume для хранения проектов LS (данные сохраняются между запусками).
    - `--env LOCAL_FILES_SERVING_ENABLED=true`: Включает возможность подключения локальных файлов (решает ошибку "Serving local files can be dangerous").
    - Если нужно остановить: `Ctrl+C`, контейнер остановится. Для фонового режима: добавьте `-d` (detached).
@@ -59,7 +61,7 @@ Label Studio будет запущен в Docker-контейнере с мон�
 
 ### Вариант 1: Быстрый импорт для небольших датасетов (до 1000 файлов)
 1. В проекте: **Import** > **Local Files**.
-2. Выберите папку: `/label-studio/data/tbank_official_logos` (для официальных логотипов) или `/label-studio/data/data_sirius` (для других данных).
+2. Выберите папку: `/label-studio/data/local/tbank_official_logos/images` (для официальных логотипов) или `/label-studio/data/local/data_sirius/images` (для других данных).
 3. Загрузите PNG-файлы (LS автоматически создаст задачи из изображений).
 4. Для tbank_official_logos: Импортируйте logo0.png - logo8.png (9 файлов).
 5. Подтвердите импорт. Задачи появятся в **Tasks**.
@@ -73,7 +75,7 @@ Label Studio будет запущен в Docker-контейнере с мон�
 4. Выберите тип **Local files**.
 5. Укажите параметры:
    - **Storage title**: "Local Images Storage"
-   - **Absolute local path**: `/label-studio/data/tbank_official_logos` или `/label-studio/data/data_sirius`
+   - **Absolute local path**: `/label-studio/data/local/tbank_official_logos/images` или `/label-studio/data/local/data_sirius/images`
    - **Import method**: Выберите **Files** (это активирует опцию "Treat every bucket object as a source file")
 6. Нажмите **Check Connection** для проверки.
 7. Нажмите **Add Storage** для сохранения.
@@ -110,7 +112,43 @@ Label Studio будет запущен в Docker-контейнере с мон�
 3. Разархивируйте архив и переименуйте json файл в `refs_ls_coco.json`.
 4. Сохраните в корень проекта или в `data/tbank_official_logos/annotations`.
 
-## Шаг 6: Исправление путей в COCO файле (Опционально)
+## Шаг 6: Импорт существующих COCO аннотаций (Опционально)
+Если у вас уже есть размеченные данные в COCO формате, вы можете импортировать их в Label Studio:
+
+### Вариант 1: Использование Label Studio Converter
+```bash
+# Установите Label Studio Converter
+uv sync
+# или если нужно добавить пакет:
+# uv add label-studio-converter
+
+# Конвертируйте COCO в Label Studio JSON формат
+label-studio-converter import coco \
+  -i data/tbank_official_logos/refs_ls_coco.json \
+  -o data/tbank_official_logos/label_studio_annotations.json
+```
+
+### Вариант 2: Использование готового скрипта
+```bash
+# Запустите готовый скрипт конвертации
+python convert_scrypt.py
+```
+
+**Скрипт автоматически:**
+- Проверит наличие входного COCO файла
+- Конвертирует его в Label Studio JSON формат
+- Покажет инструкции по импорту в Label Studio
+- Обработает возможные ошибки
+
+### Вариант 3: Импорт через UI Label Studio
+1. В проекте Label Studio нажмите **Import**
+2. Выберите **Upload Files**
+3. Загрузите конвертированный JSON файл `label_studio_annotations.json`
+4. Аннотации будут импортированы вместе с изображениями
+
+**Важно:** Убедитесь, что пути к изображениям в COCO файле соответствуют структуре монтирования Docker (`/label-studio/data/local/...`).
+
+## Шаг 7: Исправление путей в COCO файле (Опционально)
 Если пути к изображениям в экспортированном COCO файле указывают на Docker-контейнер Label Studio, используйте скрипт `fix_coco_paths.py` для преобразования путей в относительные:
 
 ```bash
@@ -121,7 +159,7 @@ uv run python fix_coco_paths.py data/tbank_official_logos/refs_ls_coco.json --im
 ```
 
 **Что делает скрипт:**
-- Преобразует пути типа `../../label-studio/data/tbank_official_logos/logo0.png` в `images/logo0.png`
+- Преобразует пути типа `../../label-studio/data/local/tbank_official_logos/logo0.png` в `images/logo0.png`
 - Сохраняет исправленный файл как `refs_ls_coco_fixed.json` в той же директории
 - Сохраняет все аннотации и метаданные без изменений
 
@@ -131,8 +169,7 @@ uv run python fix_coco_paths.py data/tbank_official_logos/refs_ls_coco.json --im
 # start_ls_docker.ps1
 $projectDir = Get-Location
 docker run -it -p 8080:8080 `
-  -v "${projectDir}/tbank_official_logos:/label-studio/data/tbank_official_logos" `
-  -v "${projectDir}/data_sirius:/label-studio/data/data_sirius" `
+  -v "${projectDir}/data:/label-studio/data/local" `
   -v label_studio_data:/label-studio/data `
   --env LOCAL_FILES_SERVING_ENABLED=true `
   heartexlabs/label-studio:1.20.0
@@ -141,7 +178,7 @@ docker run -it -p 8080:8080 `
 
 ## Устранение неисправностей
 - Docker не запускается: Проверьте, что Docker Desktop работает (иконка в трее).
-- Папки не видны: Убедитесь в правильных путях volumes (используйте абсолютные, если relative не работает: `-v "d:/tinkoff/tbank_logo_detector/tbank_official_logos:/label-studio/data/tbank_official_logos"`).
+- Папки не видны: Убедитесь в правильных путях volumes (используйте абсолютные, если relative не работает: `-v "d:/tinkoff/tbank_logo_detector/data:/label-studio/data/local"`).
 - Порт занят: Измените на `-p 8081:8080` и откройте localhost:8081.
 - data_sirius пустая: Создайте папку и добавьте изображения.
 - Ошибка "Serving local files can be dangerous": Убедитесь, что установлена переменная окружения `LOCAL_FILES_SERVING_ENABLED=true` при запуске Docker контейнера.
@@ -151,7 +188,9 @@ docker run -it -p 8080:8080 `
 
 После разметки, экспорта и исправления путей файл `refs_ls_coco_fixed.json` готов для импорта в Colab/YOLO.
 
-## Шаг 7: Подготовка данных для Google Colab (Опционально)
+**Примечание:** Если у вас уже есть готовые COCO аннотации, используйте **Шаг 6** для их импорта в Label Studio перед началом новой разметки.
+
+## Шаг 8: Подготовка данных для Google Colab (Опционально)
 Для удобной загрузки данных на Google Drive и работы в Google Colab используйте скрипт `prepare_data_for_colab.py`:
 
 ```bash
@@ -166,8 +205,8 @@ uv run python prepare_data_for_colab.py
 
 **Что делает скрипт:**
 - Создает папку `tbank_logo_detector_data` в корне проекта
-- Создает ZIP архивы для папок `data/tbank_official_logos` и `data/data_sirius`
-- Перемещает архивы в папку `tbank_logo_detector_data`
+- Создает ZIP архив для всей папки `data` (включая `tbank_official_logos` и `data_sirius` с подпапками `images`)
+- Перемещает архив в папку `tbank_logo_detector_data`
 - Показывает размеры созданных архивов
 
 **Результат:**
@@ -177,8 +216,7 @@ uv run python prepare_data_for_colab.py
 ==================================================
 
 Созданные архивы в папке tbank_logo_detector_data:
-  - tbank_official_logos_[timestamp].zip: ~0.7 МБ
-  - data_sirius_[timestamp].zip: ~1.6 ГБ
+  - data_[timestamp].zip: ~1.6 ГБ
 
 📁 Загрузите папку tbank_logo_detector_data на Google Drive
 📓 Затем подключите ее к Google Colab для работы с YOLOE и GROUNDING DINO

@@ -1,0 +1,281 @@
+[
+  {
+    "data": {
+      "image": "/data/local-files/?d=label-studio/data/local/tbank_official_logos/images/logo0.png"
+    },
+    "annotations": [
+      {
+        "result": [
+          {
+            "id": "4712d48b7b",
+            "type": "rectanglelabels",
+            "value": {
+              "x": 0.0,
+              "y": 0.0,
+              "width": 100.0,
+              "height": 99.99999999999999,
+              "rotation": 0,
+              "rectanglelabels": [
+                "yellow_shield_black_T"
+              ]
+            },
+            "to_name": "image",
+            "from_name": "label_rectangles",
+            "image_rotation": 0,
+            "original_width": 461,
+            "original_height": 462
+          }
+        ],
+        "ground_truth": false
+      }
+    ]
+  },
+  {
+    "data": {
+      "image": "/data/local-files/?d=label-studio/data/local/tbank_official_logos/images/logo1.png"
+    },
+    "annotations": [
+      {
+        "result": [
+          {
+            "id": "32f0d01428",
+            "type": "rectanglelabels",
+            "value": {
+              "x": 2.8230563002680964,
+              "y": 4.6916890080428955,
+              "width": 94.37073918039066,
+              "height": 94.36997319034852,
+              "rotation": 0,
+              "rectanglelabels": [
+                "white_shield_black_T"
+              ]
+            },
+            "to_name": "image",
+            "from_name": "label_rectangles",
+            "image_rotation": 0,
+            "original_width": 350,
+            "original_height": 351
+          }
+        ],
+        "ground_truth": false
+      }
+    ]
+  },
+  {
+    "data": {
+      "image": "/data/local-files/?d=label-studio/data/local/tbank_official_logos/images/logo2.png"
+    },
+    "annotations": [
+      {
+        "result": [
+          {
+            "id": "0499718ebc",
+            "type": "rectanglelabels",
+            "value": {
+              "x": 2.278820375335121,
+              "y": 2.949061662198391,
+              "width": 94.50402144772117,
+              "height": 94.36997319034853,
+              "rotation": 0,
+              "rectanglelabels": [
+                "yellow_shield_black_T"
+              ]
+            },
+            "to_name": "image",
+            "from_name": "label_rectangles",
+            "image_rotation": 0,
+            "original_width": 351,
+            "original_height": 351
+          }
+        ],
+        "ground_truth": false
+      }
+    ]
+  },
+  {
+    "data": {
+      "image": "/data/local-files/?d=label-studio/data/local/tbank_official_logos/images/logo3.png"
+    },
+    "annotations": [
+      {
+        "result": [
+          {
+            "id": "d10df5ad60",
+            "type": "rectanglelabels",
+            "value": {
+              "x": 22.117962466487935,
+              "y": 25.067024128686327,
+              "width": 55.898123324396785,
+              "height": 55.36193029490617,
+              "rotation": 0,
+              "rectanglelabels": [
+                "white_shield_black_T"
+              ]
+            },
+            "to_name": "image",
+            "from_name": "label_rectangles",
+            "image_rotation": 0,
+            "original_width": 500,
+            "original_height": 500
+          }
+        ],
+        "ground_truth": false
+      }
+    ]
+  },
+  {
+    "data": {
+      "image": "/data/local-files/?d=label-studio/data/local/tbank_official_logos/images/logo4.png"
+    },
+    "annotations": [
+      {
+        "result": [
+          {
+            "id": "f2f72143c3",
+            "type": "rectanglelabels",
+            "value": {
+              "x": 22.117962466487903,
+              "y": 24.79892761394101,
+              "width": 55.63002680965137,
+              "height": 55.495978552278814,
+              "rotation": 0,
+              "rectanglelabels": [
+                "white_shield_black_T"
+              ]
+            },
+            "to_name": "image",
+            "from_name": "label_rectangles",
+            "image_rotation": 0,
+            "original_width": 500,
+            "original_height": 500
+          }
+        ],
+        "ground_truth": false
+      }
+    ]
+  },
+  {
+    "data": {
+      "image": "/data/local-files/?d=label-studio/data/local/tbank_official_logos/images/logo5.png"
+    },
+    "annotations": [
+      {
+        "result": [
+          {
+            "id": "3b4ec0007e",
+            "type": "rectanglelabels",
+            "value": {
+              "x": 21.983914209115284,
+              "y": 24.932975871313644,
+              "width": 55.76407506702411,
+              "height": 55.76407506702413,
+              "rotation": 0,
+              "rectanglelabels": [
+                "yellow_shield_black_T"
+              ]
+            },
+            "to_name": "image",
+            "from_name": "label_rectangles",
+            "image_rotation": 0,
+            "original_width": 500,
+            "original_height": 500
+          }
+        ],
+        "ground_truth": false
+      }
+    ]
+  },
+  {
+    "data": {
+      "image": "/data/local-files/?d=label-studio/data/local/tbank_official_logos/images/logo6.png"
+    },
+    "annotations": [
+      {
+        "result": [
+          {
+            "id": "cd57f18ef9",
+            "type": "rectanglelabels",
+            "value": {
+              "x": 22.117962466487914,
+              "y": 25.067024128686242,
+              "width": 55.49597855227874,
+              "height": 55.764075067023875,
+              "rotation": 0,
+              "rectanglelabels": [
+                "purple_shield_white_T"
+              ]
+            },
+            "to_name": "image",
+            "from_name": "label_rectangles",
+            "image_rotation": 0,
+            "original_width": 500,
+            "original_height": 500
+          }
+        ],
+        "ground_truth": false
+      }
+    ]
+  },
+  {
+    "data": {
+      "image": "/data/local-files/?d=label-studio/data/local/tbank_official_logos/images/logo7.png"
+    },
+    "annotations": [
+      {
+        "result": [
+          {
+            "id": "c9a0d3094c",
+            "type": "rectanglelabels",
+            "value": {
+              "x": 22.1179624664879,
+              "y": 24.79892761394106,
+              "width": 55.76407506702411,
+              "height": 55.89812332439682,
+              "rotation": 0,
+              "rectanglelabels": [
+                "yellow_shield_black_T"
+              ]
+            },
+            "to_name": "image",
+            "from_name": "label_rectangles",
+            "image_rotation": 0,
+            "original_width": 1108,
+            "original_height": 1108
+          }
+        ],
+        "ground_truth": false
+      }
+    ]
+  },
+  {
+    "data": {
+      "image": "/data/local-files/?d=label-studio/data/local/tbank_official_logos/images/logo8.png"
+    },
+    "annotations": [
+      {
+        "result": [
+          {
+            "id": "0628b68c05",
+            "type": "rectanglelabels",
+            "value": {
+              "x": 22.117962466487928,
+              "y": 24.93297587131367,
+              "width": 55.76407506702412,
+              "height": 55.76407506702412,
+              "rotation": 0,
+              "rectanglelabels": [
+                "yellow_shield_black_T"
+              ]
+            },
+            "to_name": "image",
+            "from_name": "label_rectangles",
+            "image_rotation": 0,
+            "original_width": 1108,
+            "original_height": 1108
+          }
+        ],
+        "ground_truth": false
+      }
+    ]
+  }
+]
