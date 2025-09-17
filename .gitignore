@@ -1,5 +1,11 @@
 # ignore data
-data_sirius
+*.zip
+data/data_sirius
+data/data_synt
+
+# Ignore synthesis data folders
+/data_preparation/synthesis/backgrounds/
+/data_preparation/synthesis/crops/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
@@ -72,3 +78,5 @@ venv.bak/
 
 # PyPI configuration file
 .pypirc
+/data_preparation/synthesis/backgrounds/
+/data_preparation/synthesis/crops/

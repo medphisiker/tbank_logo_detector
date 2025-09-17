@@ -1,0 +1,17 @@
+<View>
+  <Image name="image" value="$image"/>
+
+  <Header value="PolygonLabels"/>
+  <PolygonLabels name="labelpolygons" toName="image">
+    <Label value="purple_shield_white_T" background="rgba(218, 1, 238, 1)"/>
+    <Label value="white_shield_black_T" background="rgba(0, 255, 0, 1)"/>
+    <Label value="yellow_shield_black_T" background="rgba(1, 146, 243, 1)"/>
+  </PolygonLabels>
+
+  <Header value="RectangleLabels"/>
+  <RectangleLabels name="label_rectangles" toName="image">
+    <Label value="purple_shield_white_T" background="rgba(218, 1, 238, 1)"/>
+    <Label value="white_shield_black_T" background="rgba(0, 255, 0, 1)"/>
+    <Label value="yellow_shield_black_T" background="rgba(1, 146, 243, 1)"/>
+  </RectangleLabels>
+</View>
