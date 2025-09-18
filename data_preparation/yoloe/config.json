@@ -6,5 +6,6 @@
   "conf": 0.5,
   "iou": 0.7,
   "runs_dir": "runs/yoloe_predict",
-  "device": "0"
+  "device": "0",
+  "weights_dir": "/data/ultralytics_weights"
 }

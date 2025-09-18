@@ -48,7 +48,9 @@ docker run --gpus all -v ./data:/app/data tbank-yoloe
 ```
 
 Запуск в контейнере:
-docker run --gpus all -v ./data:/data -v ./ultralytics_cache:/root/.config/Ultralytics tbank-yoloe-ultralytics python /app/yoloe/tbank_yoloe_bulk_inference.py --config /app/yoloe/config.json
+```
+docker run --gpus all -v ./data:/data -v ./ultralytics_cache/weights:/ultralytics/weights -v ./ultralytics_cache/runs:/ultralytics/runs tbank-yoloe-ultralytics
+```
 
 ## Настройка
 
