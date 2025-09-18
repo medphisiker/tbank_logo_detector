@@ -15,7 +15,7 @@
 Из корня проекта:
 
 ```
-docker build -f data_preparation/yoloe/Dockerfile -t tbank-yoloe data_preparation/yoloe
+docker build -f data_preparation/yoloe/ultralytics_dockerfile -t tbank-yoloe-ultralytics data_preparation/yoloe
 ```
 
 ## Запуск контейнера
@@ -48,7 +48,7 @@ docker run --gpus all -v ./data:/app/data tbank-yoloe
 ```
 
 Запуск в контейнере:
-docker run --gpus all -v ./data:/app/data tbank-yoloe python /app/yoloe/tbank_yoloe_bulk_inference.py --config /app/data/config.json
+docker run --gpus all -v ./data:/data -v ./ultralytics_cache:/root/.config/Ultralytics tbank-yoloe-ultralytics python /app/yoloe/tbank_yoloe_bulk_inference.py --config /app/yoloe/config.json
 
 ## Настройка
 
