@@ -3,6 +3,7 @@ import json
 from PIL import Image
 
 def export_to_coco(img_dir, labels_dir, output_path):
+    print(f"Exporting COCO from {img_dir}, labels_dir={labels_dir}, output={output_path}")
     names = ['purple_shield_white_T', 'white_shield_black_T', 'yellow_shield_black_T']
     coco = {
         'info': {'description': 'YOLOE pseudo labels for tbank data_sirius'},

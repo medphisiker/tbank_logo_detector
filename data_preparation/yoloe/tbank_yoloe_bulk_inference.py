@@ -3,13 +3,15 @@ import os
 from yoloe_package import prepare_data, run_yolo_predict, export_to_coco, save_results
 
 def main():
-    config_path = os.getenv('CONFIG_PATH', 'config.json')
+    config_path = os.getenv('CONFIG_PATH', '/app/yoloe/config.json')
+    print(f"Loading config from {config_path}")
     with open(config_path, 'r') as f:
         config = json.load(f)
+    print("Config loaded")
 
-    input_dir = config.get('input_dir', 'data/data_sirius/images')
+    input_dir = config.get('input_dir', '/data/data_sirius/images')
     refs_json = config.get('refs_json', 'data/tbank_official_logos/refs_ls_coco.json')
-    output_dir = config.get('output_dir', 'yoloe_results')
+    output_dir = config.get('output_dir', '/data/yoloe_results')
     subset = config.get('subset')
     conf = config.get('conf', 0.5)
     iou = config.get('iou', 0.7)
