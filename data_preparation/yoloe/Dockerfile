@@ -1,7 +1,7 @@
 FROM nvidia/cuda:12.6.0-cudnn-devel-ubuntu22.04
 
-# Install curl
-RUN apt-get update && apt-get install -y curl && rm -rf /var/lib/apt/lists/*
+# Install curl and OpenGL libraries for OpenCV
+RUN apt-get update && apt-get install -y curl libgl1-mesa-glx libglib2.0-0 && rm -rf /var/lib/apt/lists/*
 
 # Copy uv binary from official image
 COPY --from=ghcr.io/astral-sh/uv:latest /uv /bin/uv
