@@ -1,0 +1,13 @@
+FROM ultralytics/ultralytics:latest
+
+# Set working directory
+WORKDIR /app
+
+# Copy yoloe code (but since mounted, optional)
+COPY . /app/yoloe
+
+# Change to yoloe dir
+WORKDIR /app/yoloe
+
+# Run the main script
+CMD ["python", "tbank_yoloe_bulk_inference.py"]
