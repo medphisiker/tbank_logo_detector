@@ -13,8 +13,8 @@ WORKDIR /app
 COPY pyproject.toml ./
 
 # Install Python with uv, create venv, install dependencies
-RUN uv python install 3.13
-RUN uv venv --python 3.13
+RUN uv python install 3.12
+RUN uv venv --python 3.12
 ENV PATH="/app/.venv/bin:$PATH"
 RUN uv lock
 RUN uv sync --frozen
