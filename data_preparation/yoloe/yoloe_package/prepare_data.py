@@ -3,6 +3,7 @@ import shutil
 from glob import glob
 
 def prepare_data(input_dir, subset=None):
+    print(f"Preparing data from {input_dir}, subset={subset}")
     img_dir = input_dir
     if not os.path.exists(img_dir):
         raise ValueError(f"Input images directory not found: {img_dir}")
@@ -10,6 +11,7 @@ def prepare_data(input_dir, subset=None):
     all_img_paths = []
     for ext in ['*.jpg', '*.png', '*.jpeg']:
         all_img_paths.extend(glob(os.path.join(img_dir, '**', ext), recursive=True))
+    print(f"Found {len(all_img_paths)} images")
     
     if subset is not None and subset < len(all_img_paths):
         subset_dir = os.path.join(os.path.dirname(img_dir), 'subset')

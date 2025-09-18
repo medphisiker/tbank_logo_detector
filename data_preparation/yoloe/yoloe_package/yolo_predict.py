@@ -3,7 +3,9 @@ import numpy as np
 import json
 
 def run_yolo_predict(img_dir, refs_json, runs_dir, conf=0.5, iou=0.7, device='auto'):
+    print(f"Starting YOLOE predict on {img_dir}, refs={refs_json}, runs_dir={runs_dir}, conf={conf}, iou={iou}, device={device}")
     model = YOLOE('yoloe-11l-seg.pt')
+    print("Model loaded")
     
     # Load refs for visual prompts
     with open(refs_json, 'r') as f:
@@ -38,7 +40,9 @@ def run_yolo_predict(img_dir, refs_json, runs_dir, conf=0.5, iou=0.7, device='au
     # Text prompts matching category ids
     names = ['purple_shield_white_T', 'white_shield_black_T', 'yellow_shield_black_T']
     text_prompts = ['purple shield with white T logo', 'white shield with black T logo', 'yellow shield with black T logo']
+    print("Generating text embeddings")
     text_pe = model.get_text_pe(text_prompts)
+    print("Setting classes with text embeddings")
     model.set_classes(names, text_pe)  # Hybrid
     
     results = model.predict(
