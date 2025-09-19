@@ -8,21 +8,31 @@
 
 ## Быстрый старт
 
-Для быстрого запуска всего пайплайна синтеза данных используйте BAT или SH скрипты, которые автоматически запускают Docker-контейнер:
+Для запуска пайплайна синтеза данных используйте отдельные скрипты для каждого этапа. Это позволяет анализировать результаты каждого шага и при необходимости корректировать параметры:
+
+### Полный пайплайн (последовательное выполнение):
 
 ```cmd
-# Windows (из корня проекта)
-./run_synthesis_pipeline.bat 1000
+# Windows CMD
+cd data_preparation/synthesis
+run_docker_crop_logos.bat
+run_docker_backgrounds_download.bat 1000 1920
+run_docker_prepare_background_objects.bat 200
+run_docker_synth_gen.bat 5000 0.5 0.4 15
 
-# Linux/Mac (из корня проекта)
-./run_synthesis_pipeline.sh 1000
+# Windows PowerShell
+cd data_preparation/synthesis
+.\run_docker_crop_logos.bat
+.\run_docker_backgrounds_download.bat 1000 1920
+.\run_docker_prepare_background_objects.bat 200
+.\run_docker_synth_gen.bat 5000 0.5 0.4 15
 ```
 
-Эти скрипты последовательно выполнят:
-1. Обрезку логотипов из официальных изображений
-2. Скачивание высококачественных фоновых изображений (1920x1920)
-3. Подготовку объектов-distractors для hard-negatives
-4. Генерацию 1000 синтетических изображений с расширенными возможностями
+Эта последовательность выполнит:
+1. **Обрезку логотипов** из официальных изображений
+2. **Скачивание фонов** (1920x1920, 1000 изображений)
+3. **Подготовку distractors** (200 объектов)
+4. **Генерацию синтетики** с расширенными возможностями
 
 Результат сохраняется в `data/data_synt/`.
 
@@ -47,16 +57,21 @@ docker pull medphisiker/tbank-synth:latest
 docker run -v "$(pwd)/data_preparation/synthesis:/app/synthesis" -v "$(pwd)/data:/app/data" --rm medphisiker/tbank-synth:latest python gen_synth.py --N 2000
 ```
 
-**Через скрипты**:
+**Через отдельные скрипты**:
 ```cmd
 # Windows CMD
-run_synthesis_pipeline.bat 2000
+cd data_preparation/synthesis
+run_docker_crop_logos.bat
+run_docker_backgrounds_download.bat 1000 1920
+run_docker_prepare_background_objects.bat 200
+run_docker_synth_gen.bat 2000 0.5 0.4 15
 
 # Windows PowerShell
-.\run_synthesis_pipeline.bat 2000
-
-# Linux/Mac
-./run_synthesis_pipeline.sh 2000
+cd data_preparation/synthesis
+.\run_docker_crop_logos.bat
+.\run_docker_backgrounds_download.bat 1000 1920
+.\run_docker_prepare_background_objects.bat 200
+.\run_docker_synth_gen.bat 2000 0.5 0.4 15
 ```
 
 ### Docker Hub
@@ -149,114 +164,123 @@ docker tag tbank-synth medphisiker/tbank-synth:latest
 docker push medphisiker/tbank-synth:latest
 ```
 
-## Batch-скрипты (Windows)
+## Отдельные скрипты для каждого этапа
 
-### run_synthesis_pipeline.bat
+### run_docker_crop_logos.bat
 
-**Расположение**: Корень проекта (`run_synthesis_pipeline.bat`)
+**Расположение**: `data_preparation/synthesis/run_docker_crop_logos.bat`
 
-**Назначение**: Основной скрипт для запуска всего пайплайна (использует Docker-контейнер).
+**Назначение**: Обрезка логотипов из официальных изображений.
 
 **Функциональность**:
-- Принимает параметры: `N` (число изображений), `min_scale_down`, `iou_threshold`, `max_neg`
-- Последовательно выполняет все этапы в Docker-контейнере
-- Выводит статус выполнения каждого шага
-- Поддержка новых возможностей: distractors, multi-logo, advanced augmentations
+- Запускает Docker-контейнер для обрезки логотипов
+- Использует COCO-аннотации из `data/tbank_official_logos/refs_ls_coco.json`
+- Сохраняет обрезанные логотипы в `crops/` по классам
 
 **Запуск**:
 ```cmd
-# Windows CMD - с новыми параметрами
-run_synthesis_pipeline.bat 5000 0.5 0.4 15
+# Windows CMD
+cd data_preparation/synthesis
+run_docker_crop_logos.bat
 
-# Windows CMD - с параметрами по умолчанию
-run_synthesis_pipeline.bat 1000
-
-# Windows PowerShell - с новыми параметрами
-.\run_synthesis_pipeline.bat 5000 0.5 0.4 15
-
-# Windows PowerShell - с параметрами по умолчанию
-.\run_synthesis_pipeline.bat 1000
+# Windows PowerShell
+cd data_preparation/synthesis
+.\run_docker_crop_logos.bat
 ```
 
-### run_synth.bat
+### run_docker_backgrounds_download.bat
 
-**Расположение**: `data_preparation/synthesis/run_synth.bat`
+**Расположение**: `data_preparation/synthesis/run_docker_backgrounds_download.bat`
 
-**Назначение**: Сборка и запуск Docker-контейнера.
+**Назначение**: Скачивание фоновых изображений.
+
+**Функциональность**:
+- Скачивает высококачественные фоновые изображения (1920x1920)
+- Поддержка тематических фонов
+- Сохраняет в `backgrounds/` директорию
+
+**Запуск**:
+```cmd
+# Windows CMD
+cd data_preparation/synthesis
+run_docker_backgrounds_download.bat 1000 1920 false
+
+# Windows PowerShell
+cd data_preparation/synthesis
+.\run_docker_backgrounds_download.bat 1000 1920 false
+```
+
+**Параметры**: `[num] [size] [thematic]`
+
+### run_docker_prepare_background_objects.bat
+
+**Расположение**: `data_preparation/synthesis/run_docker_prepare_background_objects.bat`
+
+**Назначение**: Подготовка объектов-distractors для hard-negatives.
+
+**Функциональность**:
+- Скачивает и подготавливает distractor изображения
+- Включает Tinkoff-варианты и другие похожие объекты
+- Сохраняет в `background_objects/` директорию
+
+**Запуск**:
+```cmd
+# Windows CMD
+cd data_preparation/synthesis
+run_docker_prepare_background_objects.bat 200
+
+# Windows PowerShell
+cd data_preparation/synthesis
+.\run_docker_prepare_background_objects.bat 200
+```
+
+**Параметры**: `[num]`
+
+### run_docker_synth_gen.bat
+
+**Расположение**: `data_preparation/synthesis/run_docker_synth_gen.bat`
+
+**Назначение**: Генерация синтетических данных с расширенными возможностями.
+
+**Функциональность**:
+- Multi-logo размещение с IoU-контролем
+- Добавление distractors
+- Расширенные аугментации
+- Балансировка по классам
+- Сохраняет результат в `data/data_synt/`
+
+**Запуск**:
+```cmd
+# Windows CMD
+cd data_preparation/synthesis
+run_docker_synth_gen.bat 5000 0.5 0.4 15
+
+# Windows PowerShell
+cd data_preparation/synthesis
+.\run_docker_synth_gen.bat 5000 0.5 0.4 15
+```
+
+**Параметры**: `[N] [min_scale_down] [iou_threshold] [max_neg]`
+
+## Shell-скрипты (Linux/Mac)
+
+### docker-build-run.sh
+
+**Расположение**: `data_preparation/synthesis/docker-build-run.sh`
+
+**Назначение**: Сборка и запуск Docker-контейнера для Unix-систем.
 
 **Функциональность**:
 - Собирает образ `tbank-synth` локально
 - Монтирует проект и запускает генерацию
 
 **Запуск**:
-```cmd
-# Windows CMD
-cd data_preparation/synthesis
-run_synth.bat 2000
-
-# Windows PowerShell
-cd data_preparation/synthesis
-.\run_synth.bat 2000
-```
-
-### docker-build-run.bat
-
-**Расположение**: `data_preparation/synthesis/docker-build-run.bat`
-
-**Назначение**: Тестовый запуск с готовым образом.
-
-**Функциональность**:
-- Скачивает готовый образ
-- Запускает тестовую генерацию с `N=10`
-
-**Запуск**:
-```cmd
-# Windows CMD
-cd data_preparation/synthesis
-docker-build-run.bat
-
-# Windows PowerShell
-cd data_preparation/synthesis
-.\docker-build-run.bat
-```
-
-## Shell-скрипты (Linux/Mac)
-
-### run_synthesis_pipeline.sh
-
-**Расположение**: Корень проекта (`run_synthesis_pipeline.sh`)
-
-**Назначение**: Аналог `run_synthesis_pipeline.bat` для Unix-систем (использует Docker-контейнер).
-
-**Функциональность**:
-- Аналогична Windows-версии
-- Поддержка параметров: `N`, `min_scale_down`, `iou_threshold`, `max_neg`
-- Новые возможности: distractors, multi-logo, advanced augmentations
-
-**Запуск**:
-```bash
-# С новыми параметрами
-./run_synthesis_pipeline.sh 5000 0.5 0.4 15
-
-# С параметрами по умолчанию
-./run_synthesis_pipeline.sh 1000
-```
-
-### docker-build-run.sh
-
-**Расположение**: `data_preparation/synthesis/docker-build-run.sh`
-
-**Назначение**: Аналог `docker-build-run.bat` для Unix-систем.
-
-**Функциональность**:
-- Скачивает готовый образ
-- Тестовая генерация с `N=10`
-
-**Запуск**:
 ```bash
 cd data_preparation/synthesis
 ./docker-build-run.sh
 ```
+
+**Примечание**: Для поэтапного запуска используйте прямые команды Docker аналогично Windows-версии, заменяя `%CD%` на `$(pwd)` и `docker run` команды.
 
 ## Python-скрипты
 
@@ -377,15 +401,23 @@ python gen_synth.py --N 5000 --min_scale_down 0.5 --iou_threshold 0.4 --max_neg 
 ### Генерация с hard-negatives и multi-logo
 ```bash
 # Linux/Mac - полный пайплайн с новыми возможностями
-./run_synthesis_pipeline.sh 5000 0.5 0.4 15
+cd data_preparation/synthesis
+python crop_logos.py
+python download_backgrounds.py --num 1000 --size 1920
+python prepare_background_objects.py --num 200
+python gen_synth.py --N 5000 --min_scale_down 0.5 --iou_threshold 0.4 --max_neg 15
 
 # Windows PowerShell - полный пайплайн с новыми возможностями
-.\run_synthesis_pipeline.bat 5000 0.5 0.4 15
+cd data_preparation/synthesis
+python crop_logos.py
+python download_backgrounds.py --num 1000 --size 1920
+python prepare_background_objects.py --num 200
+python gen_synth.py --N 5000 --min_scale_down 0.5 --iou_threshold 0.4 --max_neg 15
 
-# Только генерация с кастомными параметрами (Linux/Mac)
+# Через Docker - только генерация с кастомными параметрами (Linux/Mac)
 docker run -v "$(pwd)/data_preparation/synthesis:/app/synthesis" -v "$(pwd)/data:/app/data" --rm medphisiker/tbank-synth:latest python gen_synth.py --N 2000 --min_scale_down 0.7 --iou_threshold 0.3 --max_neg 20
 
-# Только генерация с кастомными параметрами (Windows PowerShell)
+# Через Docker - только генерация с кастомными параметрами (Windows PowerShell)
 docker run -v "${PWD}/data_preparation/synthesis:/app/synthesis" -v "${PWD}/data:/app/data" --rm medphisiker/tbank-synth:latest python gen_synth.py --N 2000 --min_scale_down 0.7 --iou_threshold 0.3 --max_neg 20
 ```
 
