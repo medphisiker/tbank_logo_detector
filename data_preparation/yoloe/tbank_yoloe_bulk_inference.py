@@ -1,17 +1,20 @@
 import json
 import os
 from yoloe_package import prepare_data, run_yolo_predict, export_to_coco, save_results
-
+from ultralytics import settings
 
 def main():
-    config_path = os.getenv("CONFIG_PATH", "/app/yoloe/config.json")
+    config_path = os.getenv("CONFIG_PATH", "/app/config.json")
     print(f"Loading config from {config_path}")
     with open(config_path, "r") as f:
         config = json.load(f)
     print("Config loaded")
 
-    weights_dir = config.get("weights_dir", "/data/ultralytics_weights")
-    os.environ["ULTRALYTICS_WEIGHTS_DIR"] = weights_dir
+    # weights_dir = config.get("weights_dir", "/data/ultralytics_weights")
+    weights_dir = "./yolo_weights"
+    
+    settings["weights_dir"] = weights_dir
+    print(settings)
     print(f"Weights dir set to {weights_dir}")
 
     input_dir = config.get("input_dir", "/data/data_sirius/images")

@@ -7,5 +7,5 @@
   "iou": 0.7,
   "runs_dir": "runs/yoloe_predict",
   "device": "0",
-  "weights_dir": "/data/ultralytics_weights"
+  "weights_dir": "./ultralytics_weights"
 }

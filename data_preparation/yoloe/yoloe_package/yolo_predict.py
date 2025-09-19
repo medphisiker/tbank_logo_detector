@@ -35,7 +35,18 @@ def run_yolo_predict(img_dir, refs_json, runs_dir, conf=0.5, iou=0.7, device='au
             grouped_bboxes[cls_id] = []
         grouped_bboxes[cls_id].append([x1_norm, y1_norm, x2_norm, y2_norm])
     
-    visual_prompts = {'bboxes': grouped_bboxes, 'cls': grouped_cls}
+    # Flatten bboxes and cls for visual prompts
+    all_bboxes = []
+    all_cls = []
+    for cls_id, bboxes_list in grouped_bboxes.items():
+        for bbox in bboxes_list:
+            all_bboxes.append(bbox)
+            all_cls.append(cls_id)
+    
+    visual_prompts = {
+        'bboxes': np.array(all_bboxes, dtype=np.float32),
+        'cls': np.array(all_cls, dtype=np.int64)
+    }
     
     # Text prompts matching category ids
     names = ['purple_shield_white_T', 'white_shield_black_T', 'yellow_shield_black_T']
@@ -53,7 +64,6 @@ def run_yolo_predict(img_dir, refs_json, runs_dir, conf=0.5, iou=0.7, device='au
         save_txt=True,
         project=runs_dir,
         name='predict',
-        recursive=True,
         device=device
     )
     print(f'Prediction complete. Results in {runs_dir}/')

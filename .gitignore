@@ -3,6 +3,10 @@
 data/data_sirius
 data/data_synt
 
+# ignore models
+*.pt
+*.ts
+
 # Ignore synthesis data folders
 /data_preparation/synthesis/backgrounds/
 /data_preparation/synthesis/crops/

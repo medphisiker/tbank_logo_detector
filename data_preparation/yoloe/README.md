@@ -23,39 +23,39 @@ docker build -f data_preparation/yoloe/ultralytics_dockerfile -t tbank-yoloe-ult
 Из корня проекта:
 
 ```
-docker run --gpus all -v ./data:/app/data tbank-yoloe
+docker run -it --gpus all -v ./data:/data -v ./data_preparation/yoloe:/app tbank-yoloe-ultralytics
 ```
 
-- Volume: `./data:/app/data`.
+- Volume: `./data:/data` для подключения данных для обработки и сохранения результатов обработки.
+- Volume: `./data_preparation/yoloe:/app` для подключения папки содержащей код ля работы `YOLOE`:
+1. скрипт `tbank_yoloe_bulk_inference.py` для запуска обработки.
+2. python package `yoloe_package` содержаший удобный интерфейс для использования `YOLOE` для few-shot разметки данных.
 - Результаты в `data/yoloe_results/`.
+3. в эту же папку будут сохраняться веса моделей `model_cache`, необходимые для работы пайплайна.
 
 ## Скрипт запуска
 
 Используйте `tbank_yoloe_bulk_inference.py` с config.json для параметров (input_dir, refs_json, output_dir, subset, conf, iou, runs_dir, device).
 
-Пример config.json:
+Пример config.json (для Docker используй абсолютные пути):
 ```json
 {
-  "input_dir": "data/data_sirius/images",
-  "refs_json": "data/tbank_official_logos/refs_ls_coco.json",
-  "output_dir": "yoloe_results",
-  "subset": null,
+  "input_dir": "/data/data_sirius/images",
+  "refs_json": "/data/tbank_official_logos/refs_ls_coco.json",
+  "output_dir": "/data/yoloe_results",
+  "subset": 10,
   "conf": 0.5,
   "iou": 0.7,
   "runs_dir": "runs/yoloe_predict",
-  "device": "auto"
+  "device": "0",
+  "weights_dir": "./ultralytics_weights"
 }
 ```
 
 Запуск в контейнере:
 ```
-docker run --gpus all -v ./data:/data -v ./ultralytics_cache/weights:/ultralytics/weights -v ./ultralytics_cache/runs:/ultralytics/runs tbank-yoloe-ultralytics
+docker run -it --gpus all -v ./data:/data -v ./data_preparation/yoloe:/app tbank-yoloe-ultralytics python tbank_yoloe_bulk_inference.py
 ```
-
-## Настройка
-
-- GPU: --gpus all.
-- CPU: docker run -v ./data:/app/data tbank-yoloe.
 
 ## Выходные файлы
 
@@ -66,11 +66,10 @@ docker run --gpus all -v ./data:/data -v ./ultralytics_cache/weights:/ultralytic
 
 Интерактивно:
 ```
-docker run -it --gpus all -v ./data:/app/data tbank-yoloe /bin/bash
+docker run -it --gpus all -v ./data:/data -v ./data_preparation/yoloe:/app tbank-yoloe-ultralytics /bin/bash
 ```
 Затем внутри контейнера:
 ```
-cd /app/yoloe
 python tbank_yoloe_bulk_inference.py
 ```
 
