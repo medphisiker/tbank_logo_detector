@@ -120,15 +120,34 @@ docker run -v "$(pwd)/data_preparation/synthesis:/app/synthesis" \
 
 ### background_utils.py
 
-#### `download_backgrounds(backgrounds_dir: str, num_backgrounds: int = 500, img_size: int = 640) -> None`
-Скачивает случайные фоновые изображения с Picsum.
+#### `download_backgrounds(backgrounds_dir: str, num_backgrounds: int = 1000, img_size: int = 1920, thematic: bool = False) -> None`
+Скачивает фоновые изображения с Picsum или Unsplash API.
+
+**Новые параметры:**
+- `img_size`: размер изображений (default: 1920 для high-res)
+- `thematic`: использовать тематические фоны (требует API key)
 
 ### augmentations.py
 
 #### `get_augmentation_pipeline() -> A.Compose`
-Возвращает пайплайн аугментаций на основе Albumentations.
+Возвращает legacy пайплайн аугментаций.
+
+#### `get_background_aug_pipeline() -> A.Compose`
+Возвращает расширенный пайплайн аугментаций для фоновых изображений.
+
+#### `get_neg_aug_pipeline() -> A.Compose`
+Возвращает пайплайн аугментаций для distractor объектов.
+
+#### `get_logo_aug_pipeline() -> A.Compose`
+Возвращает пайплайн аугментаций для логотипов.
 
 ### generator.py
+
+#### `calculate_iou(bbox1: tuple, bbox2: tuple) -> float`
+Вычисляет IoU между двумя bounding boxes в YOLO-формате.
+
+#### `load_background_objects(bg_objects_dir: Path) -> list`
+Загружает список путей к distractor изображениям.
 
 #### `setup_output_dirs(out_base: Path, splits: list = ['train', 'val', 'test']) -> None`
 Создает директории для изображений и лейблов.
@@ -139,8 +158,14 @@ docker run -v "$(pwd)/data_preparation/synthesis:/app/synthesis" \
 #### `load_backgrounds(bg_dir: Path) -> list`
 Загружает список путей к фоновым изображениям.
 
-#### `generate_synthetic_image(bg_path: str, crop_path: str, aug_pipeline) -> tuple`
-Генерирует одно синтетическое изображение с наложением логотипа.
+#### `place_distractors(bg: Image.Image, bg_objects: list, neg_aug_pipeline, max_neg: int = 15) -> Image.Image`
+Размещает distractor объекты на фоне без лейблов.
+
+#### `place_multi_logos(bg: Image.Image, crops_by_class: dict, logo_aug_pipeline, iou_threshold: float = 0.4, max_logos: int = 10) -> tuple`
+Размещает несколько логотипов с контролем IoU.
+
+#### `generate_synthetic_image(bg_path: str, crop_path: str, aug_pipeline, min_scale_down: float = 0.5) -> tuple`
+Генерирует одно синтетическое изображение с наложением логотипа и случайным ресайзом фона.
 
 #### `save_yolo_label(lbl_path: Path, cls: int, bbox: tuple) -> None`
 Сохраняет лейбл в формате YOLO.
@@ -154,80 +179,6 @@ docker run -v "$(pwd)/data_preparation/synthesis:/app/synthesis" \
 - `iou_threshold`: порог IoU для размещения логотипов (default: 0.4)
 - `max_neg`: максимальное количество distractors на изображение (default: 15)
 
-## Формат данных
-
-### Классы логотипов
-- 0: purple (фиолетовый)
-- 1: white (белый)
-- 2: yellow (желтый)
-
-### Структура выходных данных
-```
-data/data_synt/
-├── images/
-│   ├── train/
-│   ├── val/
-│   └── test/
-└── labels/
-    ├── train/
-    ├── val/
-    └── test/
-```
-
-### Формат лейблов YOLO
-```
-<class_id> <x_center> <y_center> <width> <height>
-```
-
-## Аугментации
-
-### Основные аугментации (legacy)
-Применяются следующие аугментации:
-- RandomBrightnessContrast (яркость/контраст)
-- GaussNoise (гауссов шум)
-- MotionBlur (размытие движения)
-- HueSaturationValue (оттенок/насыщенность/яркость)
-
-### Расширенные аугментации
-
-**Фоновые изображения:**
-- RandomBrightnessContrast, GaussNoise, MotionBlur
-- GaussianBlur, Solarize, RandomShadow
-- JPEGCompression для имитации сжатия
-
-**Distractor объекты:**
-- HueSaturationValue, RandomRotate90
-- GaussNoise, Perspective, RandomErasing
-- GaussianBlur
-
-**Логотипы:**
-- RandomBrightnessContrast, Rotate, ShiftScaleRotate
-- Perspective, HueSaturationValue, GaussNoise
-- ElasticTransform для деформаций
-
-## Конфигурация
-
-Модуль автоматически определяет окружение:
-- Docker: использует пути `/app/synthesis` и `/app/data`
-- Локально: использует относительные пути от корня проекта
-
-## Примеры
-
-### Генерация 2000 изображений
-
-```bash
-cd data_preparation/synthesis
-python gen_synth.py --N 2000
-```
-
-### Использование готового Docker-образа
-
-```bash
-docker pull medphisiker/tbank-synth:latest
-docker run -v "$(pwd)/data_preparation/synthesis:/app/synthesis" \
-           -v "$(pwd)/data:/app/data" \
-           --rm medphisiker/tbank-synth python gen_synth.py --N 1000
-```
 
 ## Разработка и расширение
 
