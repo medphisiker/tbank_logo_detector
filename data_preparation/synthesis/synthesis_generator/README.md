@@ -8,10 +8,13 @@
 
 Основные возможности:
 - Обрезка логотипов из COCO-аннотаций
-- Скачивание фоновых изображений
-- Генерация синтетических изображений с аугментациями
+- Скачивание высококачественных фоновых изображений (1920x1920) с тематическими опциями
+- Генерация синтетических изображений с расширенными аугментациями
+- Размещение hard-negatives (distractors) для улучшения обучения
+- Multi-logo размещение с контролем IoU-перекрытий
+- Балансировка по классам (purple/white/yellow)
+- Случайное позиционирование с контролем видимости
 - Автоматическое определение путей для Docker и локального запуска
-- Поддержка балансировки по классам
 
 ## Структура модуля
 
@@ -142,8 +145,14 @@ docker run -v "$(pwd)/data_preparation/synthesis:/app/synthesis" \
 #### `save_yolo_label(lbl_path: Path, cls: int, bbox: tuple) -> None`
 Сохраняет лейбл в формате YOLO.
 
-#### `generate_synthetic_dataset(crops_dir: Path, bg_dir: Path, out_base: Path, N: int, aug_pipeline=None) -> None`
-Генерирует полный синтетический датасет.
+#### `generate_synthetic_dataset(crops_dir: Path, bg_dir: Path, out_base: Path, N: int, aug_pipeline=None, bg_objects_dir: Path = None, min_scale_down: float = 0.5, iou_threshold: float = 0.4, max_neg: int = 15) -> None`
+Генерирует полный синтетический датасет с расширенными возможностями.
+
+**Новые параметры:**
+- `bg_objects_dir`: директория с distractor объектами (hard-negatives)
+- `min_scale_down`: минимальный коэффициент уменьшения фона (0.5-1.0)
+- `iou_threshold`: порог IoU для размещения логотипов (default: 0.4)
+- `max_neg`: максимальное количество distractors на изображение (default: 15)
 
 ## Формат данных
 
@@ -172,11 +181,29 @@ data/data_synt/
 
 ## Аугментации
 
+### Основные аугментации (legacy)
 Применяются следующие аугментации:
 - RandomBrightnessContrast (яркость/контраст)
 - GaussNoise (гауссов шум)
 - MotionBlur (размытие движения)
 - HueSaturationValue (оттенок/насыщенность/яркость)
+
+### Расширенные аугментации
+
+**Фоновые изображения:**
+- RandomBrightnessContrast, GaussNoise, MotionBlur
+- GaussianBlur, Solarize, RandomShadow
+- JPEGCompression для имитации сжатия
+
+**Distractor объекты:**
+- HueSaturationValue, RandomRotate90
+- GaussNoise, Perspective, RandomErasing
+- GaussianBlur
+
+**Логотипы:**
+- RandomBrightnessContrast, Rotate, ShiftScaleRotate
+- Perspective, HueSaturationValue, GaussNoise
+- ElasticTransform для деформаций
 
 ## Конфигурация
 

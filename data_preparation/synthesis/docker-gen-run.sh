@@ -4,4 +4,4 @@
 
 
 docker pull medphisiker/tbank-synth:latest
-docker run -v "$(pwd):/app/synthesis" -v "$(pwd)/../../data:/app/data" --rm medphisiker/tbank-synth python gen_synth.py --N 10
+docker run -v "$(pwd):/app/synthesis" -v "$(pwd)/../../data:/app/data" --rm medphisiker/tbank-synth python gen_synth.py --N 10 --min_scale_down 0.5 --iou_threshold 0.4 --max_neg 15

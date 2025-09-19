@@ -20,10 +20,19 @@
 
 Эти скрипты последовательно выполнят:
 1. Обрезку логотипов из официальных изображений
-2. Скачивание фоновых изображений
-3. Генерацию 1000 синтетических изображений
+2. Скачивание высококачественных фоновых изображений (1920x1920)
+3. Подготовку объектов-distractors для hard-negatives
+4. Генерацию 1000 синтетических изображений с расширенными возможностями
 
 Результат сохраняется в `data/data_synt/`.
+
+**Новые возможности:**
+- Multi-logo размещение (1-10 логотипов на изображение)
+- Hard-negatives (distractors) для улучшения обучения
+- Случайный ресайз фонов (0.5-1.0 от оригинала)
+- Расширенные аугментации (ElasticTransform, JPEG compression, shadows)
+- Балансировка по классам (purple/white/yellow)
+- Контроль IoU-перекрытий
 
 ## Использование готового Docker-образа
 
@@ -40,8 +49,11 @@ docker run -v "$(pwd)/data_preparation/synthesis:/app/synthesis" -v "$(pwd)/data
 
 **Через скрипты**:
 ```cmd
-# Windows
+# Windows CMD
 run_synthesis_pipeline.bat 2000
+
+# Windows PowerShell
+.\run_synthesis_pipeline.bat 2000
 
 # Linux/Mac
 ./run_synthesis_pipeline.sh 2000
@@ -51,26 +63,45 @@ run_synthesis_pipeline.bat 2000
 
 [Ссылка на Docker Hub](https://hub.docker.com/r/medphisiker/tbank-synth)
 
-**Описание**: Docker-образ для генерации синтетических данных логотипов Т-Банка. Включает пакет `synthesis_generator` с модульной архитектурой, `gen_synth.py` с albumentations augmentations, uv для deps (albumentations, pillow, numpy, tqdm, requests). Используйте `docker run` с mounts для `/app/synthesis` и `/app/data`, arg `--N` для количества изображений.
+**Описание**: Docker-образ для генерации синтетических данных логотипов Т-Банка с расширенными возможностями. Включает пакет `synthesis_generator` с модульной архитектурой, `gen_synth.py` с multi-logo размещением, hard-negatives, расширенными albumentations augmentations, uv для deps (albumentations, pillow, numpy, tqdm, requests). Поддерживает параметры: `--N`, `--min_scale_down`, `--iou_threshold`, `--max_neg`. Используйте `docker run` с mounts для `/app/synthesis` и `/app/data`.
 
 ## Отдельные команды Docker-контейнера
 
 Для запуска отдельных этапов пайплайна используйте прямые команды Docker:
 
+### Windows CMD:
 ```cmd
 # Обрезка логотипов
 docker run -v "%CD%/data_preparation/synthesis:/app/synthesis" -v "%CD%/data:/app/data" --rm medphisiker/tbank-synth:latest python crop_logos.py
 
-# Скачивание фонов
-docker run -v "%CD%/data_preparation/synthesis:/app/synthesis" -v "%CD%/data:/app/data" --rm medphisiker/tbank-synth:latest python download_backgrounds.py
+# Скачивание высококачественных фонов (1920x1920)
+docker run -v "%CD%/data_preparation/synthesis:/app/synthesis" -v "%CD%/data:/app/data" --rm medphisiker/tbank-synth:latest python download_backgrounds.py --num 1000 --size 1920
 
-# Генерация синтетики
-docker run -v "%CD%/data_preparation/synthesis:/app/synthesis" -v "%CD%/data:/app/data" --rm medphisiker/tbank-synth:latest python gen_synth.py --N 2000
+# Подготовка distractors
+docker run -v "%CD%/data_preparation/synthesis:/app/synthesis" -v "%CD%/data:/app/data" --rm medphisiker/tbank-synth:latest python prepare_background_objects.py --num 200
+
+# Генерация синтетики с расширенными параметрами
+docker run -v "%CD%/data_preparation/synthesis:/app/synthesis" -v "%CD%/data:/app/data" --rm medphisiker/tbank-synth:latest python gen_synth.py --N 2000 --min_scale_down 0.5 --iou_threshold 0.4 --max_neg 15
 ```
 
-**С переменной окружения**:
+### Windows PowerShell:
+```powershell
+# Обрезка логотипов
+docker run -v "${PWD}/data_preparation/synthesis:/app/synthesis" -v "${PWD}/data:/app/data" --rm medphisiker/tbank-synth:latest python crop_logos.py
+
+# Скачивание высококачественных фонов (1920x1920)
+docker run -v "${PWD}/data_preparation/synthesis:/app/synthesis" -v "${PWD}/data:/app/data" --rm medphisiker/tbank-synth:latest python download_backgrounds.py --num 1000 --size 1920
+
+# Подготовка distractors
+docker run -v "${PWD}/data_preparation/synthesis:/app/synthesis" -v "${PWD}/data:/app/data" --rm medphisiker/tbank-synth:latest python prepare_background_objects.py --num 200
+
+# Генерация синтетики с расширенными параметрами
+docker run -v "${PWD}/data_preparation/synthesis:/app/synthesis" -v "${PWD}/data:/app/data" --rm medphisiker/tbank-synth:latest python gen_synth.py --N 2000 --min_scale_down 0.5 --iou_threshold 0.4 --max_neg 15
+```
+
+**С переменными окружения** (работает в обоих CMD и PowerShell):
 ```cmd
-docker run -v "%CD%/data_preparation/synthesis:/app/synthesis" -v "%CD%/data:/app/data" --rm medphisiker/tbank-synth:latest -e N=2000 python gen_synth.py
+docker run -v "%CD%/data_preparation/synthesis:/app/synthesis" -v "%CD%/data:/app/data" --rm medphisiker/tbank-synth:latest -e N=2000 -e MIN_SCALE_DOWN=0.5 -e IOU_THRESHOLD=0.4 -e MAX_NEG=15 python gen_synth.py
 ```
 
 ## Сборка собственного Docker-образа
@@ -87,9 +118,13 @@ docker build -t tbank-synth -f Dockerfile .
 
 ### Через скрипты
 ```cmd
-# Windows
+# Windows CMD
 cd data_preparation/synthesis
 run_synth.bat 2000
+
+# Windows PowerShell
+cd data_preparation/synthesis
+.\run_synth.bat 2000
 
 # Linux/Mac
 cd data_preparation/synthesis
@@ -104,7 +139,8 @@ cd data_preparation/synthesis
   - `/app/synthesis`: директория с кодом и промежуточными данными
   - `/app/data`: директория с входными и выходными данными
 - **CMD**: `python gen_synth.py`
-- **Поддержка**: аргументы `--N` и переменная окружения `N`
+- **Поддержка**: аргументы `--N`, `--min_scale_down`, `--iou_threshold`, `--max_neg` и соответствующие переменные окружения
+- **Новые возможности**: multi-logo, distractors, advanced augmentations, random background scaling
 
 ### Публикация образа
 ```bash
@@ -122,13 +158,24 @@ docker push medphisiker/tbank-synth:latest
 **Назначение**: Основной скрипт для запуска всего пайплайна (использует Docker-контейнер).
 
 **Функциональность**:
-- Принимает параметр `N` для количества изображений (default: 20)
+- Принимает параметры: `N` (число изображений), `min_scale_down`, `iou_threshold`, `max_neg`
 - Последовательно выполняет все этапы в Docker-контейнере
 - Выводит статус выполнения каждого шага
+- Поддержка новых возможностей: distractors, multi-logo, advanced augmentations
 
 **Запуск**:
 ```cmd
+# Windows CMD - с новыми параметрами
+run_synthesis_pipeline.bat 5000 0.5 0.4 15
+
+# Windows CMD - с параметрами по умолчанию
 run_synthesis_pipeline.bat 1000
+
+# Windows PowerShell - с новыми параметрами
+.\run_synthesis_pipeline.bat 5000 0.5 0.4 15
+
+# Windows PowerShell - с параметрами по умолчанию
+.\run_synthesis_pipeline.bat 1000
 ```
 
 ### run_synth.bat
@@ -143,8 +190,13 @@ run_synthesis_pipeline.bat 1000
 
 **Запуск**:
 ```cmd
+# Windows CMD
 cd data_preparation/synthesis
 run_synth.bat 2000
+
+# Windows PowerShell
+cd data_preparation/synthesis
+.\run_synth.bat 2000
 ```
 
 ### docker-build-run.bat
@@ -159,8 +211,13 @@ run_synth.bat 2000
 
 **Запуск**:
 ```cmd
+# Windows CMD
 cd data_preparation/synthesis
 docker-build-run.bat
+
+# Windows PowerShell
+cd data_preparation/synthesis
+.\docker-build-run.bat
 ```
 
 ## Shell-скрипты (Linux/Mac)
@@ -173,10 +230,15 @@ docker-build-run.bat
 
 **Функциональность**:
 - Аналогична Windows-версии
-- Поддержка переменной `N_VAL` (default: 20)
+- Поддержка параметров: `N`, `min_scale_down`, `iou_threshold`, `max_neg`
+- Новые возможности: distractors, multi-logo, advanced augmentations
 
 **Запуск**:
 ```bash
+# С новыми параметрами
+./run_synthesis_pipeline.sh 5000 0.5 0.4 15
+
+# С параметрами по умолчанию
 ./run_synthesis_pipeline.sh 1000
 ```
 
@@ -220,55 +282,137 @@ python crop_logos.py
 
 ### download_backgrounds.py
 
-**Назначение**: Скачивание фоновых изображений для синтеза.
+**Назначение**: Скачивание высококачественных фоновых изображений для синтеза.
 
 **Функциональность**:
 - Скачивает случайные фотографии с сервиса Picsum (https://picsum.photos)
-- Размер изображений: 640x640 пикселей (по умолчанию)
-- Количество: 10 изображений (по умолчанию, можно изменить в коде)
+- Размер изображений: 1920x1920 пикселей (по умолчанию, для high-res)
+- Количество: 1000 изображений (по умолчанию)
+- Поддержка тематических фонов (требует Unsplash API key)
 - Сохраняет в `data_preparation/synthesis/backgrounds/bg_XXXX.jpg`
 - Использует функции из пакета `synthesis_generator.background_utils`
 
 **Запуск**:
 ```bash
 cd data_preparation/synthesis
-python download_backgrounds.py
+python download_backgrounds.py --num 1000 --size 1920
 ```
 
+**Аргументы**:
+- `--num`: количество изображений (int, default: 1000)
+- `--size`: размер изображений (int, default: 1920)
+- `--thematic`: использовать тематические фоны (flag)
+
 **Особенности**:
-- Не требует VPN или API-ключей
+- Не требует VPN или API-ключей для базового режима
 - Показывает прогресс загрузки с помощью tqdm
 - Обрабатывает ошибки сети и продолжает загрузку
+- High-res изображения позволяют случайный downscale для реализма
+
+### prepare_background_objects.py
+
+**Назначение**: Подготовка объектов-distractors (hard-negatives) для синтетической генерации.
+
+**Функциональность**:
+- Скачивает изображения похожих объектов (логотипы других банков, generic emblems)
+- Создает коллекцию distractors для размещения на фонах без лейблов
+- Помогает модели игнорировать похожие, но не целевые объекты
+- Сохраняет в `data_preparation/synthesis/background_objects/`
+
+**Запуск**:
+```bash
+cd data_preparation/synthesis
+python prepare_background_objects.py --num 200
+```
+
+**Аргументы**:
+- `--num`: количество distractor изображений (int, default: 200)
+- `--output`: директория для сохранения (str, default: background_objects)
+
+**Особенности**:
+- Автоматически скачивает различные типы distractors
+- Включает Tinkoff-варианты для hard-negative mining
+- Создает разнообразную коллекцию для realistic сцен
 
 ### gen_synth.py
 
-**Назначение**: Основной скрипт генерации синтетических данных.
+**Назначение**: Основной скрипт генерации синтетических данных с расширенными возможностями.
 
 **Функциональность**:
-- Принимает аргумент `--N` для количества генерируемых изображений (default: 20)
-- Поддерживает переменную окружения `N`
-- Использует обрезанные логотипы из `crops/` и фоны из `backgrounds/`
-- Применяет аугментации из `synthesis_generator.augmentations`
+- Принимает аргумент `--N` для количества генерируемых изображений (default: 1000)
+- Поддержка переменных окружения для всех параметров
+- Multi-logo размещение (1-10 логотипов на изображение)
+- Hard-negatives (distractors) для улучшения обучения
+- Случайный ресайз фонов (0.5-1.0 от оригинала)
+- Контроль IoU-перекрытий между логотипами
+- Балансировка по классам (purple/white/yellow)
+- Расширенные аугментации (фон + объекты + логотипы)
 - Генерирует изображения и лейблы в формате YOLO
 - Автоматически распределяет по сплитам train/val/test
 
 **Запуск**:
 ```bash
 cd data_preparation/synthesis
-python gen_synth.py --N 2000
+python gen_synth.py --N 5000 --min_scale_down 0.5 --iou_threshold 0.4 --max_neg 15
 ```
 
 **Аргументы**:
-- `--N`: количество синтетических изображений (int, default: 20)
+- `--N`: количество синтетических изображений (int, default: 1000)
+- `--min_scale_down`: минимальный коэффициент уменьшения фона (float, default: 0.5)
+- `--iou_threshold`: порог IoU для размещения логотипов (float, default: 0.4)
+- `--max_neg`: максимальное количество distractors на изображение (int, default: 15)
+
+**Переменные окружения**:
+- `N`, `MIN_SCALE_DOWN`, `IOU_THRESHOLD`, `MAX_NEG`
 
 **Особенности**:
 - Автоматическое определение путей (Docker: `/app/data/`, локально: `../../data/`)
-- Логирование процесса генерации
-- Проверка наличия необходимых файлов перед запуском
+- Логирование процесса генерации с балансом классов
+- Проверка наличия файлов: crops/, backgrounds/, background_objects/
+- Поддержка как single-logo, так и multi-logo сцен
 
+
+## Примеры использования новых возможностей
+
+### Генерация с hard-negatives и multi-logo
+```bash
+# Linux/Mac - полный пайплайн с новыми возможностями
+./run_synthesis_pipeline.sh 5000 0.5 0.4 15
+
+# Windows PowerShell - полный пайплайн с новыми возможностями
+.\run_synthesis_pipeline.bat 5000 0.5 0.4 15
+
+# Только генерация с кастомными параметрами (Linux/Mac)
+docker run -v "$(pwd)/data_preparation/synthesis:/app/synthesis" -v "$(pwd)/data:/app/data" --rm medphisiker/tbank-synth:latest python gen_synth.py --N 2000 --min_scale_down 0.7 --iou_threshold 0.3 --max_neg 20
+
+# Только генерация с кастомными параметрами (Windows PowerShell)
+docker run -v "${PWD}/data_preparation/synthesis:/app/synthesis" -v "${PWD}/data:/app/data" --rm medphisiker/tbank-synth:latest python gen_synth.py --N 2000 --min_scale_down 0.7 --iou_threshold 0.3 --max_neg 20
+```
+
+### Кастомная настройка для разных сценариев
+```bash
+# Linux/Mac - для dense сцен (много объектов)
+python gen_synth.py --N 1000 --iou_threshold 0.2 --max_neg 25
+
+# Linux/Mac - для clean сцен (минимальные distractors)
+python gen_synth.py --N 1000 --max_neg 5
+
+# Linux/Mac - для high-res backgrounds
+python download_backgrounds.py --num 2000 --size 2560
+
+# Windows PowerShell - для dense сцен (много объектов)
+python gen_synth.py --N 1000 --iou_threshold 0.2 --max_neg 25
+
+# Windows PowerShell - для clean сцен (минимальные distractors)
+python gen_synth.py --N 1000 --max_neg 5
+
+# Windows PowerShell - для high-res backgrounds
+python download_backgrounds.py --num 2000 --size 2560
+```
 
 ## Closing notes
 
+* ✅ **Реализованы все ключевые улучшения** из плана: high-res фоны с random scaling, hard-negatives, multi-logo с IoU-контролем, расширенные аугментации, балансировка классов, позиционирование с контролем видимости
 * Цель — максимально автоматизировать и документировать происхождение аннотаций (provenance), чтобы при обнаружении проблем можно было быстро проследить, откуда пришло неверное правило и исправить pipeline.
 * На верхнем уровне мы используем современную связку VLM + SAM + verification (VLM/ML classifier/OCR) + эмбеддинг-кластеризацию для масштабируемой и дешёвой по времени разметки.
 * Следующий шаг: по этому документу сгенерировать runnable notebook / script в `annotation/` с примером запуска Grounding DINO → SAM → ensemble и с шаблоном промптов. Готов приступить и сгенерировать `annotation`-notebook прямо сейчас, если нужно.

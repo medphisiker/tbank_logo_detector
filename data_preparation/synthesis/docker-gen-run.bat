@@ -17,4 +17,4 @@ echo Root: %ROOT_PATH%
 echo Synthesis: %SYNTH_PATH%
 echo Data: %DATA_PATH%
 
-docker run -v "%SYNTH_PATH%:/app/synthesis" -v "%DATA_PATH%:/app/data" --rm medphisiker/tbank-synth python gen_synth.py --N 10
+docker run -v "%SYNTH_PATH%:/app/synthesis" -v "%DATA_PATH%:/app/data" --rm medphisiker/tbank-synth python gen_synth.py --N 10 --min_scale_down 0.5 --iou_threshold 0.4 --max_neg 15
