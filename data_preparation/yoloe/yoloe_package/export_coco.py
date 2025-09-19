@@ -10,7 +10,7 @@ def export_to_coco(img_dir, labels_dir, output_path):
         'licenses': [],
         'images': [],
         'annotations': [],
-        'categories': [{'id': i+1, 'name': name} for i, name in enumerate(names)]
+        'categories': [{'id': i, 'name': name} for i, name in enumerate(names)]
     }
     image_id = 0
     ann_id = 0
@@ -30,15 +30,28 @@ def export_to_coco(img_dir, labels_dir, output_path):
                     for line in f:
                         parts = line.strip().split()
                         if len(parts) < 5: continue
-                        cls_id = int(parts[0])  # 0-2
-                        conf = float(parts[5]) if len(parts) >5 else 1.0
-                        cx, cy, bw, bh = map(float, parts[1:5])
-                        x, y = cx - bw/2, cy - bh/2
-                        w_ann, h_ann = bw * w, bh * h
+                        cls_id = int(parts[0])
+                        points_str = parts[1:]
+                        if len(parts) % 2 == 0:  # even total, has conf (class + even coords + conf)
+                            conf = float(points_str[-1])
+                            points_str = points_str[:-1]
+                        else:  # odd total, no conf (class + even coords)
+                            conf = 1.0
+                        if len(points_str) % 2 != 0 or len(points_str) < 4:
+                            continue
+                        points = list(map(float, points_str))
+                        xs = points[0::2]
+                        ys = points[1::2]
+                        x_min, x_max = min(xs), max(xs)
+                        y_min, y_max = min(ys), max(ys)
+                        x = x_min * w
+                        y = y_min * h
+                        w_ann = (x_max - x_min) * w
+                        h_ann = (y_max - y_min) * h
                         coco['annotations'].append({
                             'id': ann_id,
                             'image_id': image_id,
-                            'category_id': cls_id +1,
+                            'category_id': cls_id,
                             'bbox': [x, y, w_ann, h_ann],
                             'area': w_ann * h_ann,
                             'iscrowd': 0,

@@ -31,10 +31,26 @@ def run_inference_pipeline(params):
         params["refs_images_dir"]
     )
 
+    # Find the latest predict run dir
+    predict_dirs = sorted([d for d in os.listdir(params["runs_dir"]) if d.startswith('predict')], key=lambda x: int(x.split('predict')[1] or '0'), reverse=True)
+    if predict_dirs:
+        latest_predict = os.path.join(params["runs_dir"], predict_dirs[0])
+        labels_dir = os.path.join(latest_predict, "labels")
+        save_dir = os.path.join(latest_predict, "save")
+    else:
+        labels_dir = os.path.join(params["runs_dir"], "predict", "labels")
+        save_dir = os.path.join(params["runs_dir"], "predict", "save")
+
     # Export COCO
     pseudo_coco = os.path.join(params["output_dir"], "pseudo_coco.json")
-    labels_dir = os.path.join(params["runs_dir"], "predict", "labels")
     export_to_coco(img_dir, labels_dir, pseudo_coco)
+
+    # Copy annotated images
+    if os.path.exists(save_dir):
+        import shutil
+        annotated_dir = os.path.join(params["output_dir"], "annotated_images")
+        shutil.copytree(save_dir, annotated_dir, dirs_exist_ok=True)
+        print(f"Annotated images copied to {annotated_dir}")
 
     # Save results
     save_results(params["output_dir"], params["runs_dir"])
