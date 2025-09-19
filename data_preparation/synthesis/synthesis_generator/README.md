@@ -94,7 +94,7 @@ python gen_synth.py --N 1000
 
 ```bash
 # Сборка образа
-docker build -t tbank-synth -f Dockerfile .
+cd docker && docker build -t tbank-synth -f Dockerfile .
 
 # Запуск пайплайна
 docker run -v "$(pwd)/data_preparation/synthesis:/app/synthesis" \

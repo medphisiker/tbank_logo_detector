@@ -5,8 +5,6 @@ REM Usage: run_synth.bat [N] — N optional, default 20
 set DIR=%~dp0
 cd /d "%DIR%.."
 
-REM Build image if not exists (or always rebuild)
-docker build -t tbank-synth -f data_preparation/synthesis/Dockerfile data_preparation/synthesis
 
 REM Run with volume mount of entire project and N env
 set N_VAL=%1

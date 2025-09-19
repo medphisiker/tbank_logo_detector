@@ -4,8 +4,6 @@ REM Docker pull and run for synthesis test (small N=10) with pre-built image on 
 REM Переходим в корень проекта
 cd /d "%~dp0..\.."
 
-REM Альтернатива: Соберите свой образ
-REM docker build -t tbank-synth -f data_preparation/synthesis/Dockerfile data_preparation/synthesis
 
 docker pull medphisiker/tbank-synth:latest
 
