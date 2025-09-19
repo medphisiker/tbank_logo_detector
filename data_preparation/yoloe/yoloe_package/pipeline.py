@@ -2,7 +2,6 @@ import os
 from .prepare_data import prepare_data
 from .yolo_predict import run_yolo_predict
 from .export_coco import export_to_coco
-from .save_results import save_results
 
 def run_inference_pipeline(params):
     """Запуск основного пайплайна инференса.
@@ -51,8 +50,5 @@ def run_inference_pipeline(params):
         annotated_dir = os.path.join(params["output_dir"], "annotated_images")
         shutil.copytree(save_dir, annotated_dir, dirs_exist_ok=True)
         print(f"Annotated images copied to {annotated_dir}")
-
-    # Save results
-    save_results(params["output_dir"], params["runs_dir"])
 
     return params["output_dir"]
