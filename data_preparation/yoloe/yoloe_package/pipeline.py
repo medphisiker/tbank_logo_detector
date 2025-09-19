@@ -27,7 +27,10 @@ def run_inference_pipeline(params):
         params["conf"],
         params["iou"],
         params["device"],
-        params["refs_images_dir"]
+        params["refs_images_dir"],
+        params["batch_size"],
+        params["imgsz"],
+        params["half"]
     )
 
     # Find the latest predict run dir

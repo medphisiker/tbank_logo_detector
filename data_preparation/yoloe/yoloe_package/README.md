@@ -29,14 +29,18 @@
 ```json
 {
   "input_dir": "/data/data_sirius/images",
-  "refs_json": "/data/tbank_official_logos/refs_ls_coco.json",
+  "refs_images_json": "/data/tbank_official_logos/refs_ls_coco.json",
+  "refs_images_dir": "/data/tbank_official_logos",
   "output_dir": "/data/yoloe_results",
   "subset": null,
   "conf": 0.5,
   "iou": 0.7,
   "runs_dir": "runs/yoloe_predict",
   "device": "0",
-  "weights_dir": "./ultralytics_weights"
+  "weights_dir": "./ultralytics_weights",
+  "batch_size": 1,
+  "imgsz": 480,
+  "half": true
 }
 ```
 
@@ -47,6 +51,12 @@
 Для локального запуска используйте относительные пути (e.g. "input_dir": "data/data_sirius/images"), но в Docker — абсолютные как выше.
 
 **subset**: null для полного датасета или число (e.g. 10) для подмножества первых N изображений (копируются в поддиректорию 'subset' внутри input_dir).
+
+**batch_size**: размер батча для обработки изображений (по умолчанию 1, уменьшите при нехватке памяти GPU).
+
+**imgsz**: размер входного изображения для модели (по умолчанию 640, уменьшите для снижения потребления памяти).
+
+**half**: включить FP16 для снижения потребления памяти (по умолчанию false, установите true для GPU с поддержкой FP16).
 
 4. **Запустите пакет**:
    ```

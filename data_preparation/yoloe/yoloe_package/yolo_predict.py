@@ -123,7 +123,7 @@ def setup_text_prompts(model):
     return model
 
 
-def perform_prediction(model, img_paths, visual_prompts, conf, iou, runs_dir, device):
+def perform_prediction(model, img_paths, visual_prompts, conf, iou, runs_dir, device, batch_size=1, imgsz=640, half=False):
     """Выполнение предсказания на изображениях (нормализация visual_prompts)."""
     import numpy as np
     import torch
@@ -195,6 +195,9 @@ def perform_prediction(model, img_paths, visual_prompts, conf, iou, runs_dir, de
         project=runs_dir,
         name='predict',
         device=device,
+        batch=batch_size,
+        imgsz=imgsz,
+        half=half,
         predictor=YOLOEVPSegPredictor
     )
     print(f'Prediction complete. Results in {runs_dir}/')
@@ -202,7 +205,7 @@ def perform_prediction(model, img_paths, visual_prompts, conf, iou, runs_dir, de
 
 
 
-def run_yolo_predict(img_dir, refs_images_json, runs_dir, conf=0.5, iou=0.7, device='auto', refs_images_dir='/data/tbank_official_logos/images'):
+def run_yolo_predict(img_dir, refs_images_json, runs_dir, conf=0.5, iou=0.7, device='auto', refs_images_dir='/data/tbank_official_logos/images', batch_size=1, imgsz=640, half=False):
     """Запуск предсказания YOLOE с визуальными промптами.
  
     Parameters
@@ -254,6 +257,6 @@ def run_yolo_predict(img_dir, refs_images_json, runs_dir, conf=0.5, iou=0.7, dev
     img_paths.sort()
     print(f"Found {len(img_paths)} images to predict")
     
-    results = perform_prediction(model, img_paths, visual_prompts, conf, iou, runs_dir, device)
+    results = perform_prediction(model, img_paths, visual_prompts, conf, iou, runs_dir, device, batch_size, imgsz, half)
 
     return results

@@ -59,6 +59,9 @@ def load_parameters(config):
         "iou": config.get("iou", 0.7),
         "runs_dir": config.get("runs_dir", "runs/yoloe_predict"),
         "device": config.get("device", "auto"),
-        "refs_images_dir": config.get("refs_images_dir", "/data/tbank_official_logos/images")
+        "refs_images_dir": config.get("refs_images_dir", "/data/tbank_official_logos/images"),
+        "batch_size": config.get("batch_size", 1),
+        "imgsz": config.get("imgsz", 640),
+        "half": config.get("half", False)
     }
     return params

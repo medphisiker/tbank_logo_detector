@@ -53,14 +53,18 @@ docker run -it --gpus all -v ./data:/data -v ./data_preparation/yoloe:/app medph
 ```json
 {
   "input_dir": "/data/data_sirius/images",
-  "refs_json": "/data/tbank_official_logos/refs_ls_coco.json",
+  "refs_images_json": "/data/tbank_official_logos/refs_ls_coco.json",
+  "refs_images_dir": "/data/tbank_official_logos",
   "output_dir": "/data/yoloe_results",
   "subset": 10,
   "conf": 0.5,
   "iou": 0.7,
   "runs_dir": "runs/yoloe_predict",
   "device": "0",
-  "weights_dir": "./ultralytics_weights"
+  "weights_dir": "./ultralytics_weights",
+  "batch_size": 1,
+  "imgsz": 480,
+  "half": true
 }
 ```
 
@@ -87,6 +91,12 @@ docker run -it --gpus all -v ./data:/data -v ./data_preparation/yoloe:/app medph
 - **`device`** (string): Устройство для выполнения инференса. `"0"` — GPU 0, `"cpu"` — CPU, `"auto"` — автоматический выбор. Рекомендуется `"0"` в Docker с `--gpus all`, `"cpu"` для CPU.
 
 - **`weights_dir`** (string): Путь к директории для хранения весов модели YOLOE. По умолчанию `./ultralytics_weights`. **Примечание**: Из-за бага в ultralytics, веса могут скачиваться в `/app` (в Docker-контейнере), независимо от указанного пути. В локальной среде — в рабочую директорию.
+
+- **`batch_size`** (integer): Размер батча для обработки изображений. По умолчанию `1`. Уменьшите значение при нехватке памяти GPU (например, установите `1` для GPU с 6GB памяти).
+
+- **`imgsz`** (integer): Размер входного изображения для модели. По умолчанию `640`. Уменьшите для снижения потребления памяти (например, `480` или `320`).
+
+- **`half`** (boolean): Включить FP16 (половинную точность) для снижения потребления памяти. По умолчанию `false`. Установите `true` для GPU с поддержкой FP16.
 
 **Примечание по weights_dir**: Из-за бага в ultralytics, веса моделей скачиваются в /app (в Docker-контейнере), независимо от указанного weights_dir. В локальной среде — в рабочую директорию (data_preparation/yoloe). При монтировании -v ./data_preparation/yoloe:/app веса сохраняются локально в data_preparation/yoloe.
 
