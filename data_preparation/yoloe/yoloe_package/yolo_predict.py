@@ -121,33 +121,99 @@ def setup_text_prompts(model):
 
 
 def perform_prediction(model, img_dir, visual_prompts, conf, iou, runs_dir, device):
-    """Выполнение предсказания на изображениях.
+    """Выполнение предсказания на изображениях (нормализация visual_prompts)."""
+    import numpy as np
+    import torch
 
-    Parameters
-    ----------
-    model : YOLOE
-        Настроенная модель YOLOE.
-    img_dir : str
-        Путь к директории с изображениями для предсказания.
-    visual_prompts : dict
-        Визуальные промпты для модели.
-    conf : float
-        Порог уверенности для предсказаний.
-    iou : float
-        Порог IoU для NMS.
-    runs_dir : str
-        Путь к директории для сохранения результатов.
-    device : str
-        Устройство для выполнения (cpu/cuda).
+    # --- Normalize visual_prompts into the dict format Ultralytics expects ---
+    prompts = None
+    if visual_prompts is not None:
+        # If already a dict, copy it (we'll normalise inner types)
+        if isinstance(visual_prompts, dict):
+            vp = dict(visual_prompts)
+        else:
+            # torch tensor / np.array / list -> assume these are bboxes
+            if isinstance(visual_prompts, (torch.Tensor, np.ndarray)):
+                vp = {"bboxes": visual_prompts}
+            elif isinstance(visual_prompts, list):
+                # could be list of bboxes or list of tuples (img, bbox) — try to detect
+                # if elements look like (img, bbox) tuples (as in load_visual_prompts) convert accordingly
+                if len(visual_prompts) and isinstance(visual_prompts[0], (list, tuple)) and len(visual_prompts[0]) == 2:
+                    # list of (img, bbox) -> split
+                    refer_images = []
+                    bboxes = []
+                    cls_ids = []
+                    for el in visual_prompts:
+                        try:
+                            img, bbox = el
+                            refer_images.append(img)
+                            bboxes.append(bbox)
+                        except Exception:
+                            pass
+                    vp = {"refer_images": refer_images, "bboxes": bboxes}
+                else:
+                    vp = {"bboxes": visual_prompts}
+            else:
+                # unknown type -> ignore prompts
+                print(f"Warning: unexpected visual_prompts type {type(visual_prompts)}, ignoring prompts")
+                vp = None
 
-    Returns
-    -------
-    list
-        Результаты предсказаний.
-    """
+        if vp is not None:
+            prompts = {}
+            # refer_images: keep as-is if present (list of np.ndarray images)
+            if "refer_images" in vp and vp["refer_images"] is not None:
+                prompts["refer_images"] = vp["refer_images"]
+
+            # bboxes: convert to simple Python list of [x1,y1,x2,y2]
+            bboxes = vp.get("bboxes", None)
+            if bboxes is not None:
+                normalized_bboxes = []
+                for bb in bboxes:
+                    # bb could be tensor, np.array, list, tuple
+                    if isinstance(bb, torch.Tensor):
+                        arr = bb.detach().cpu().numpy().reshape(-1)
+                    else:
+                        arr = np.array(bb).reshape(-1)
+                    # ensure length >=4, take first 4 values
+                    if arr.size >= 4:
+                        normalized_bboxes.append([float(arr[0]), float(arr[1]), float(arr[2]), float(arr[3])])
+                    else:
+                        # skip invalid bboxes
+                        print(f"Warning: skipping invalid bbox {bb}")
+                prompts["bboxes"] = normalized_bboxes
+
+            # classes: convert to list of ints if present
+            cls = vp.get("cls", None)
+            if cls is not None:
+                try:
+                    cls_arr = np.array(cls).astype(int).reshape(-1)
+                    prompts["cls"] = [int(x) for x in cls_arr]
+                except Exception:
+                    # fallback: try to coerce each element
+                    try:
+                        prompts["cls"] = [int(x) for x in list(cls)]
+                    except Exception:
+                        pass
+
+            # if prompts ended up empty, set to None
+            if not prompts:
+                prompts = None
+
+    # --- Logging for debug (can be removed later) ---
+    if prompts is None:
+        print("perform_prediction: prompts=None")
+    else:
+        try:
+            print("perform_prediction: prompts keys:", list(prompts.keys()))
+            if "bboxes" in prompts:
+                print("perform_prediction: number of bboxes:", len(prompts["bboxes"]))
+        except Exception:
+            pass
+
+    # --- Call model.predict using the normalized prompts ---
     results = model.predict(
         source=img_dir,
-        visual_prompts=visual_prompts,
+        prompts=prompts,               # <- pass normalized prompts under 'prompts'
         conf=conf,
         iou=iou,
         save_txt=True,
@@ -158,6 +224,7 @@ def perform_prediction(model, img_dir, visual_prompts, conf, iou, runs_dir, devi
     )
     print(f'Prediction complete. Results in {runs_dir}/')
     return results
+
 
 
 def run_yolo_predict(img_dir, refs_images_json, runs_dir, conf=0.5, iou=0.7, device='auto', refs_images_dir='/data/tbank_official_logos/images'):
