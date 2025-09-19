@@ -2,6 +2,7 @@
 *.zip
 data/data_sirius
 data/data_synt
+data/yoloe_results
 
 # ignore models
 *.pt

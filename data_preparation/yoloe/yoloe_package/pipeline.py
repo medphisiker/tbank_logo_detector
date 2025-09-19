@@ -16,10 +16,11 @@ def run_inference_pipeline(params):
     str
         Путь к выходной директории с результатами.
     """
-    # Prepare data
+    print("--- Preparing data ---")
     img_dir = prepare_data(params["input_dir"], params["subset"])
+    print(f"Data prepared in: {img_dir}")
 
-    # Run prediction
+    print("--- Running YOLOE prediction ---")
     results = run_yolo_predict(
         img_dir,
         params["refs_images_json"],
@@ -32,6 +33,7 @@ def run_inference_pipeline(params):
         params["imgsz"],
         params["half"]
     )
+    print("Prediction completed successfully")
 
     # Find the latest predict run dir
     predict_dirs = sorted([d for d in os.listdir(params["runs_dir"]) if d.startswith('predict')], key=lambda x: int(x.split('predict')[1] or '0'), reverse=True)
@@ -43,15 +45,18 @@ def run_inference_pipeline(params):
         labels_dir = os.path.join(params["runs_dir"], "predict", "labels")
         save_dir = os.path.join(params["runs_dir"], "predict")
 
-    # Export COCO
+    print("--- Exporting results to COCO format ---")
     pseudo_coco = os.path.join(params["output_dir"], "pseudo_coco.json")
     export_to_coco(img_dir, labels_dir, pseudo_coco)
+    print(f"COCO annotations exported to: {pseudo_coco}")
 
     # Copy annotated images
     if os.path.exists(save_dir):
         import shutil
+        print("--- Copying annotated images ---")
         annotated_dir = os.path.join(params["output_dir"], "annotated_images")
         shutil.copytree(save_dir, annotated_dir, dirs_exist_ok=True)
-        print(f"Annotated images copied to {annotated_dir}")
+        print(f"Annotated images copied to: {annotated_dir}")
 
+    print("--- Pipeline completed ---")
     return params["output_dir"]

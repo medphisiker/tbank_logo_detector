@@ -185,6 +185,8 @@ def perform_prediction(model, img_paths, visual_prompts, conf, iou, runs_dir, de
             prompts = None
 
     # --- Call model.predict using the normalized prompts ---
+    print(f"Starting prediction on {len(img_paths)} images with batch_size={batch_size}")
+
     results = model.predict(
         source=img_paths,
         visual_prompts=prompts,         # <- pass normalized prompts under 'visual_prompts'
@@ -200,7 +202,9 @@ def perform_prediction(model, img_paths, visual_prompts, conf, iou, runs_dir, de
         half=half,
         predictor=YOLOEVPSegPredictor
     )
+
     print(f'Prediction complete. Results in {runs_dir}/')
+    print(f'Processed {len(img_paths)} images total')
     return results
 
 
@@ -256,7 +260,14 @@ def run_yolo_predict(img_dir, refs_images_json, runs_dir, conf=0.5, iou=0.7, dev
         img_paths.extend(glob.glob(os.path.join(img_dir, ext.upper())))
     img_paths.sort()
     print(f"Found {len(img_paths)} images to predict")
-    
+
+    # Log progress for each batch
+    total_images = len(img_paths)
+    for i in range(0, total_images, batch_size):
+        batch_end = min(i + batch_size, total_images)
+        batch_paths = img_paths[i:batch_end]
+        print(f"Processing batch {i//batch_size + 1}/{(total_images + batch_size - 1)//batch_size}: {len(batch_paths)} images ({i+1}-{batch_end}/{total_images})")
+
     results = perform_prediction(model, img_paths, visual_prompts, conf, iou, runs_dir, device, batch_size, imgsz, half)
 
     return results

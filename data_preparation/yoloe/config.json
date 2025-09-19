@@ -10,6 +10,6 @@
   "device": "0",
   "weights_dir": "./ultralytics_weights",
   "batch_size": 1,
-  "imgsz": 480,
+  "imgsz": 640,
   "half": true
 }

@@ -15,6 +15,12 @@ def prepare_data(input_dir, subset=None):
     
     if subset is not None and subset < len(all_img_paths):
         subset_dir = os.path.join(os.path.dirname(img_dir), 'subset')
+
+        # Clear previous subset files
+        if os.path.exists(subset_dir):
+            print(f"Clearing previous subset files from {subset_dir}")
+            shutil.rmtree(subset_dir)
+
         os.makedirs(subset_dir, exist_ok=True)
         selected_paths = all_img_paths[:subset]
         for src_path in selected_paths:
