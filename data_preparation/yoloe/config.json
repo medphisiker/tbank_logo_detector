@@ -3,7 +3,7 @@
   "refs_images_json": "/data/tbank_official_logos/refs_ls_coco.json",
   "refs_images_dir": "/data/tbank_official_logos",
   "output_dir": "/data/yoloe_results",
-  "subset": 50,
+  "subset": 10,
   "conf": 0.5,
   "iou": 0.7,
   "runs_dir": "runs/yoloe_predict",
@@ -11,5 +11,11 @@
   "weights_dir": "./ultralytics_weights",
   "batch_size": 1,
   "imgsz": 640,
-  "half": true
+  "half": false,
+  "save_visualizations": true,
+  "use_sahi": true,
+  "sahi_slice_height": 640,
+  "sahi_slice_width": 640,
+  "sahi_overlap_height_ratio": 0.2,
+  "sahi_overlap_width_ratio": 0.2
 }

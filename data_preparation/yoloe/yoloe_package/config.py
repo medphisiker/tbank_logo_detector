@@ -62,6 +62,12 @@ def load_parameters(config):
         "refs_images_dir": config.get("refs_images_dir", "/data/tbank_official_logos/images"),
         "batch_size": config.get("batch_size", 1),
         "imgsz": config.get("imgsz", 640),
-        "half": config.get("half", False)
+        "half": config.get("half", False),
+        "save_visualizations": config.get("save_visualizations", True),
+        "use_sahi": config.get("use_sahi", False),
+        "sahi_slice_height": config.get("sahi_slice_height", 512),
+        "sahi_slice_width": config.get("sahi_slice_width", 512),
+        "sahi_overlap_height_ratio": config.get("sahi_overlap_height_ratio", 0.2),
+        "sahi_overlap_width_ratio": config.get("sahi_overlap_width_ratio", 0.2)
     }
     return params

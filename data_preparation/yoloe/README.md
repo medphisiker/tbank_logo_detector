@@ -64,7 +64,13 @@ docker run -it --gpus all -v ./data:/data -v ./data_preparation/yoloe:/app medph
   "weights_dir": "./ultralytics_weights",
   "batch_size": 1,
   "imgsz": 480,
-  "half": true
+  "half": true,
+  "save_visualizations": true,
+  "use_sahi": false,
+  "sahi_slice_height": 512,
+  "sahi_slice_width": 512,
+  "sahi_overlap_height_ratio": 0.2,
+  "sahi_overlap_width_ratio": 0.2
 }
 ```
 
@@ -97,6 +103,18 @@ docker run -it --gpus all -v ./data:/data -v ./data_preparation/yoloe:/app medph
 - **`imgsz`** (integer): Размер входного изображения для модели. По умолчанию `640`. Уменьшите для снижения потребления памяти (например, `480` или `320`).
 
 - **`half`** (boolean): Включить FP16 (половинную точность) для снижения потребления памяти. По умолчанию `false`. Установите `true` для GPU с поддержкой FP16.
+
+- **`save_visualizations`** (boolean): Сохранять ли визуализации предсказаний модели в виде изображений. По умолчанию `true`. Если `false`, будут сохранены только текстовые файлы с предсказаниями (labels), но не изображения с нарисованными bounding box'ами.
+
+- **`use_sahi`** (boolean): Использовать ли SAHI для tiled inference на больших изображениях. По умолчанию `false`. Если `true`, изображения будут разбиваться на тайлы для более эффективной обработки больших изображений. **Примечание**: Требует установки SAHI (`pip install sahi`). Если SAHI не установлен, скрипт выдаст предупреждение и автоматически переключится на стандартный режим.
+
+- **`sahi_slice_height`** (integer): Высота тайла для SAHI tiled inference. По умолчанию `512`. Используется только при `use_sahi: true`.
+
+- **`sahi_slice_width`** (integer): Ширина тайла для SAHI tiled inference. По умолчанию `512`. Используется только при `use_sahi: true`.
+
+- **`sahi_overlap_height_ratio`** (float): Коэффициент перекрытия тайлов по высоте для SAHI. По умолчанию `0.2` (20% перекрытие). Используется только при `use_sahi: true`.
+
+- **`sahi_overlap_width_ratio`** (float): Коэффициент перекрытия тайлов по ширине для SAHI. По умолчанию `0.2` (20% перекрытие). Используется только при `use_sahi: true`.
 
 **Примечание по weights_dir**: Из-за бага в ultralytics, веса моделей скачиваются в /app (в Docker-контейнере), независимо от указанного weights_dir. В локальной среде — в рабочую директорию (data_preparation/yoloe). При монтировании -v ./data_preparation/yoloe:/app веса сохраняются локально в data_preparation/yoloe.
 
@@ -202,7 +220,7 @@ python tbank_yoloe_bulk_inference.py
 Если вы хотите собрать образ самостоятельно, из корня проекта:
 
 ```
-docker build -f data_preparation/yoloe/ultralytics_dockerfile -t tbank-yoloe-ultralytics data_preparation/yoloe
+docker build -f data_preparation/yoloe/Dockerfile -t tbank-yoloe-ultralytics data_preparation/yoloe
 ```
 
 Затем используйте `tbank-yoloe-ultralytics` вместо `medphisiker/tbank-yoloe-ultralytics` в командах выше.

@@ -31,7 +31,13 @@ def run_inference_pipeline(params):
         params["refs_images_dir"],
         params["batch_size"],
         params["imgsz"],
-        params["half"]
+        params["half"],
+        params["save_visualizations"],
+        params["use_sahi"],
+        params["sahi_slice_height"],
+        params["sahi_slice_width"],
+        params["sahi_overlap_height_ratio"],
+        params["sahi_overlap_width_ratio"]
     )
     print("Prediction completed successfully")
 

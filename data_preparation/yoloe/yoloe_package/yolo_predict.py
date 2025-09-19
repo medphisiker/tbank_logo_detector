@@ -4,6 +4,21 @@ import numpy as np
 import json
 import cv2
 import os
+import torch
+
+# SAHI imports for tiled inference
+try:
+    from sahi import AutoDetectionModel
+    from sahi.predict import get_sliced_prediction
+    SAHI_AVAILABLE = True
+    print("✅ SAHI library found - tiled inference available")
+except ImportError as e:
+    SAHI_AVAILABLE = False
+    print("⚠️  WARNING: SAHI library not found!")
+    print("   Tiled inference will not be available.")
+    print("   To enable SAHI tiled inference, install with:")
+    print("   pip install sahi")
+    print(f"   Import error: {e}")
 
 def load_model():
     """Загрузка YOLOE модели.
@@ -123,7 +138,37 @@ def setup_text_prompts(model):
     return model
 
 
-def perform_prediction(model, img_paths, visual_prompts, conf, iou, runs_dir, device, batch_size=1, imgsz=640, half=False):
+def perform_sahi_prediction(image_path, model_path, visual_prompts, conf, iou, slice_height=512, slice_width=512, overlap_height_ratio=0.2, overlap_width_ratio=0.2):
+    """Выполнение SAHI tiled inference для одного изображения."""
+    if not SAHI_AVAILABLE:
+        raise ImportError(
+            "❌ SAHI library is required for tiled inference but not installed!\n"
+            "Please install SAHI with: pip install sahi\n"
+            "Alternatively, set 'use_sahi': false in config.json to use standard inference."
+        )
+
+    # Создаем модель SAHI для YOLOE
+    detection_model = AutoDetectionModel.from_pretrained(
+        model_type='ultralytics',
+        model_path=model_path,
+        confidence_threshold=conf,
+        device='cuda:0' if torch.cuda.is_available() else 'cpu'
+    )
+
+    # Выполняем sliced prediction
+    result = get_sliced_prediction(
+        image_path,
+        detection_model,
+        slice_height=slice_height,
+        slice_width=slice_width,
+        overlap_height_ratio=overlap_height_ratio,
+        overlap_width_ratio=overlap_width_ratio
+    )
+
+    return result
+
+
+def perform_prediction(model, img_paths, visual_prompts, conf, iou, runs_dir, device, batch_size=1, imgsz=640, half=False, save_visualizations=True, use_sahi=False, sahi_slice_height=512, sahi_slice_width=512, sahi_overlap_height_ratio=0.2, sahi_overlap_width_ratio=0.2):
     """Выполнение предсказания на изображениях (нормализация visual_prompts)."""
     import numpy as np
     import torch
@@ -184,32 +229,64 @@ def perform_prediction(model, img_paths, visual_prompts, conf, iou, runs_dir, de
         else:
             prompts = None
 
-    # --- Call model.predict using the normalized prompts ---
-    print(f"Starting prediction on {len(img_paths)} images with batch_size={batch_size}")
+    # --- Choose between standard and SAHI tiled inference ---
+    if use_sahi:
+        if not SAHI_AVAILABLE:
+            print("❌ ERROR: SAHI tiled inference requested but SAHI library not installed!")
+            print("   Falling back to standard YOLOE inference...")
+            print("   To enable SAHI, install with: pip install sahi")
+            use_sahi = False  # Fallback to standard inference
+        else:
+            print(f"✅ Starting SAHI tiled prediction on {len(img_paths)} images")
+            print(f"   Slice size: {sahi_slice_height}x{sahi_slice_width}, overlap: {sahi_overlap_height_ratio}")
 
-    results = model.predict(
-        source=img_paths,
-        visual_prompts=prompts,         # <- pass normalized prompts under 'visual_prompts'
-        conf=conf,
-        iou=iou,
-        save_txt=True,
-        save=True,
-        project=runs_dir,
-        name='predict',
-        device=device,
-        batch=batch_size,
-        imgsz=imgsz,
-        half=half,
-        predictor=YOLOEVPSegPredictor
-    )
+            all_results = []
+            for img_path in img_paths:
+                print(f"   Processing with SAHI: {os.path.basename(img_path)}")
+                result = perform_sahi_prediction(
+                    img_path,
+                    'yoloe-11l-seg.pt',  # Используем путь к модели YOLOE
+                    visual_prompts,
+                    conf,
+                    iou,
+                    sahi_slice_height,
+                    sahi_slice_width,
+                    sahi_overlap_height_ratio,
+                    sahi_overlap_width_ratio
+                )
+                all_results.append(result)
 
-    print(f'Prediction complete. Results in {runs_dir}/')
-    print(f'Processed {len(img_paths)} images total')
-    return results
+            print(f'✅ SAHI prediction complete. Processed {len(img_paths)} images')
+            return all_results
+
+    else:
+        # Standard YOLOE prediction
+        print(f"🔍 Starting standard YOLOE prediction on {len(img_paths)} images")
+        print(f"   Batch size: {batch_size}, Image size: {imgsz}, Device: {device}")
+
+        results = model.predict(
+            source=img_paths,
+            visual_prompts=prompts,         # <- pass normalized prompts under 'visual_prompts'
+            conf=conf,
+            iou=iou,
+            save_txt=save_visualizations,
+            save=save_visualizations,
+            project=runs_dir,
+            name='predict',
+            device=device,
+            batch=batch_size,
+            imgsz=imgsz,
+            half=half,
+            predictor=YOLOEVPSegPredictor
+        )
+
+        print(f'✅ Standard prediction complete. Results in {runs_dir}/predict/')
+        print(f'📊 Processed {len(img_paths)} images total')
+        return results
 
 
 
-def run_yolo_predict(img_dir, refs_images_json, runs_dir, conf=0.5, iou=0.7, device='auto', refs_images_dir='/data/tbank_official_logos/images', batch_size=1, imgsz=640, half=False):
+def run_yolo_predict(img_dir, refs_images_json, runs_dir, conf=0.5, iou=0.7, device='auto', refs_images_dir='/data/tbank_official_logos/images', batch_size=1, imgsz=640, half=False, save_visualizations=True, use_sahi=False, sahi_slice_height=512, sahi_slice_width=512, sahi_overlap_height_ratio=0.2, sahi_overlap_width_ratio=0.2):
     """Запуск предсказания YOLOE с визуальными промптами.
  
     Parameters
@@ -268,6 +345,6 @@ def run_yolo_predict(img_dir, refs_images_json, runs_dir, conf=0.5, iou=0.7, dev
         batch_paths = img_paths[i:batch_end]
         print(f"Processing batch {i//batch_size + 1}/{(total_images + batch_size - 1)//batch_size}: {len(batch_paths)} images ({i+1}-{batch_end}/{total_images})")
 
-    results = perform_prediction(model, img_paths, visual_prompts, conf, iou, runs_dir, device, batch_size, imgsz, half)
+    results = perform_prediction(model, img_paths, visual_prompts, conf, iou, runs_dir, device, batch_size, imgsz, half, save_visualizations, use_sahi, sahi_slice_height, sahi_slice_width, sahi_overlap_height_ratio, sahi_overlap_width_ratio)
 
     return results
