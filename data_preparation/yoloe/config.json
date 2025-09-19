@@ -1,9 +1,9 @@
 {
-  "input_dir": "/data/tbank_official_logos/images",
+  "input_dir": "/data/data_sirius/images",
   "refs_images_json": "/data/tbank_official_logos/refs_ls_coco.json",
   "refs_images_dir": "/data/tbank_official_logos",
   "output_dir": "/data/yoloe_results",
-  "subset": null,
+  "subset": 50,
   "conf": 0.5,
   "iou": 0.7,
   "runs_dir": "runs/yoloe_predict",

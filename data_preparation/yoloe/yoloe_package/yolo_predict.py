@@ -168,16 +168,21 @@ def perform_prediction(model, img_paths, visual_prompts, conf, iou, runs_dir, de
         except Exception:
             pass
 
-    # Replicate prompts for each image if single prompt
-    if prompts is not None and len(img_paths) > 1 and len(prompts['refer_images']) == 1:
-        refer = prompts['refer_images'][0]
-        bboxes = prompts['bboxes'][0]
-        cls = prompts['cls'][0]
-        prompts = {
-            'refer_images': [refer] * len(img_paths),
-            'bboxes': [bboxes] * len(img_paths),
-            'cls': [cls] * len(img_paths)
-        }
+    # Replicate prompts for each image - use first reference image for all predictions
+    if prompts is not None and len(img_paths) > 1:
+        # Use only the first reference image for all predictions to avoid complexity
+        first_refer = prompts['refer_images'][0] if prompts['refer_images'] else None
+        first_bboxes = prompts['bboxes'][0] if prompts['bboxes'] else None
+        first_cls = prompts['cls'][0] if prompts['cls'] else None
+
+        if first_refer is not None:
+            prompts = {
+                'refer_images': [first_refer] * len(img_paths),
+                'bboxes': [first_bboxes] * len(img_paths),
+                'cls': [first_cls] * len(img_paths)
+            }
+        else:
+            prompts = None
 
     # --- Call model.predict using the normalized prompts ---
     results = model.predict(
