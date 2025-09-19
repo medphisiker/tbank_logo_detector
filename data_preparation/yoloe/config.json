@@ -1,6 +1,7 @@
 {
   "input_dir": "/data/data_sirius/images",
-  "refs_json": "/data/tbank_official_logos/refs_ls_coco.json",
+  "refs_images_json": "/data/tbank_official_logos/refs_ls_coco.json",
+  "refs_images_dir": "/data/tbank_official_logos/images",
   "output_dir": "/data/yoloe_results",
   "subset": 10,
   "conf": 0.5,

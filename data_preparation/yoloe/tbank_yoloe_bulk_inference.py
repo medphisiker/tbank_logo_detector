@@ -17,13 +17,14 @@ def main():
     print(f"Weights dir set to {weights_dir}")
 
     input_dir = config.get("input_dir", "/data/data_sirius/images")
-    refs_json = config.get("refs_json", "data/tbank_official_logos/refs_ls_coco.json")
+    refs_images_json = config.get("refs_images_json", "/data/tbank_official_logos/refs_ls_coco.json")
     output_dir = config.get("output_dir", "/data/yoloe_results")
     subset = config.get("subset")
     conf = config.get("conf", 0.5)
     iou = config.get("iou", 0.7)
     runs_dir = config.get("runs_dir", "runs/yoloe_predict")
     device = config.get("device", "auto")
+    refs_images_dir = config.get("refs_images_dir", "/data/tbank_official_logos/images")
 
     os.makedirs(output_dir, exist_ok=True)
     os.makedirs(runs_dir, exist_ok=True)
@@ -32,7 +33,7 @@ def main():
     img_dir = prepare_data(input_dir, subset)
 
     # Run prediction
-    results = run_yolo_predict(img_dir, refs_json, runs_dir, conf, iou, device)
+    results = run_yolo_predict(img_dir, refs_images_json, runs_dir, conf, iou, device, refs_images_dir)
 
     # Export COCO
     pseudo_coco = os.path.join(output_dir, "pseudo_coco.json")
