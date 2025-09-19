@@ -62,7 +62,9 @@ def load_visual_prompts(refs_data, refs_images_dir):
             continue
         img_info = img_dict[img_id]
         file_name = img_info['file_name']
-        ref_path = os.path.join(refs_images_dir, file_name)
+        if file_name.startswith('images/'):
+            file_name = file_name[len('images/'):]
+        ref_path = os.path.join(refs_images_dir, "images", file_name)
         ref_img = cv2.imread(ref_path)
         if ref_img is None:
             continue
