@@ -1,4 +1,5 @@
 from ultralytics import YOLOE
+from ultralytics.models.yolo.yoloe import YOLOEVPSegPredictor
 import numpy as np
 import json
 import cv2
@@ -86,12 +87,12 @@ def load_visual_prompts(refs_data, refs_images_dir):
     for cls_id in sorted(grouped_refs.keys()):
         for ref_img, bbox_norm in grouped_refs[cls_id]:
             refer_images.append(ref_img)
-            bboxes.append(bbox_norm)
+            bboxes.append(np.array(bbox_norm, dtype=np.float32))
             cls_ids.append(cls_id)
-    
+
     visual_prompts = {
         'refer_images': refer_images,
-        'bboxes': np.array(bboxes, dtype=np.float32),
+        'bboxes': bboxes,
         'cls': np.array(cls_ids, dtype=np.int64)
     }
     return visual_prompts
@@ -152,7 +153,8 @@ def perform_prediction(model, img_dir, visual_prompts, conf, iou, runs_dir, devi
         save_txt=True,
         project=runs_dir,
         name='predict',
-        device=device
+        device=device,
+        predictor=YOLOEVPSegPredictor
     )
     print(f'Prediction complete. Results in {runs_dir}/')
     return results
