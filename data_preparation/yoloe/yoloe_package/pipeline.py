@@ -35,10 +35,10 @@ def run_inference_pipeline(params):
     if predict_dirs:
         latest_predict = os.path.join(params["runs_dir"], predict_dirs[0])
         labels_dir = os.path.join(latest_predict, "labels")
-        save_dir = os.path.join(latest_predict, "save")
+        save_dir = latest_predict  # Images saved in predict/ directory
     else:
         labels_dir = os.path.join(params["runs_dir"], "predict", "labels")
-        save_dir = os.path.join(params["runs_dir"], "predict", "save")
+        save_dir = os.path.join(params["runs_dir"], "predict")
 
     # Export COCO
     pseudo_coco = os.path.join(params["output_dir"], "pseudo_coco.json")

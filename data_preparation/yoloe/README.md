@@ -2,7 +2,17 @@
 
 ## Обзор
 
-Этот Dockerfile позволяет запустить пакет YOLOE для автоматической разметки логотипов Т-Банка в изолированной среде. Использует uv для управления зависимостями, основан на nvidia/cuda:12.6.0-cudnn-devel-ubuntu22.04 с Python 3.13. По умолчанию запускает tbank_yoloe_bulk_inference.py с config.json.
+Используйте Docker контейнер для запуска YOLOE - модели для автоматической разметки логотипов Т-Банка. Контейнер основан на ultralytics/ultralytics:latest с предустановленными зависимостями Ultralytics.
+
+### Примеры результатов
+
+Ниже приведены примеры изображений с визуализацией найденных логотипов Т-Банка с помощью YOLOE:
+
+![Пример 1: logo3.jpg](../../data/yoloe_results/annotated_images/logo3.jpg)
+
+![Пример 2: logo4.jpg](../../data/yoloe_results/annotated_images/logo4.jpg)
+
+![Пример 3: logo6.jpg](../../data/yoloe_results/annotated_images/logo6.jpg)
 
 ## Требования
 
@@ -60,8 +70,8 @@ docker run -it --gpus all -v ./data:/data -v ./data_preparation/yoloe:/app tbank
 
 ## Выходные файлы
 
-- `data/yoloe_results/pseudo_coco.json`: Псевдо-аннотации.
-- `data/yoloe_results/runs_yoloe.zip`: Labels и визуализации.
+- `data/yoloe_results/pseudo_coco.json`: Псевдо-аннотации в COCO формате.
+- `data/yoloe_results/annotated_images/`: Изображения с визуализацией предсказаний (bbox и маски).
 
 ## Отладка
 
