@@ -5,21 +5,51 @@ import cv2
 import os
 
 def load_model():
-    """Загрузка YOLOE модели."""
+    """Загрузка YOLOE модели.
+
+    Returns
+    -------
+    YOLOE
+        Загруженная модель YOLOE.
+    """
     model = YOLOE('yoloe-11l-seg.pt')
     print("Model loaded")
     return model
 
 
 def load_refs_data(refs_images_json):
-    """Загрузка данных референсов из JSON."""
+    """Загрузка данных референсов из JSON файла.
+
+    Parameters
+    ----------
+    refs_images_json : str
+        Путь к JSON файлу с данными референсов.
+
+    Returns
+    -------
+    dict
+        Словарь с данными референсов в формате COCO.
+    """
     with open(refs_images_json, 'r') as f:
         refs_data = json.load(f)
     return refs_data
 
 
 def load_visual_prompts(refs_data, refs_images_dir):
-    """Загрузка визуальных промптов из референсных изображений."""
+    """Загрузка визуальных промптов из референсных изображений.
+
+    Parameters
+    ----------
+    refs_data : dict
+        Данные референсов в формате COCO.
+    refs_images_dir : str
+        Путь к директории с референсными изображениями.
+
+    Returns
+    -------
+    dict
+        Словарь с визуальными промптами для модели.
+    """
     # Create img_dict for normalization
     img_dict = {img['id']: img for img in refs_data['images']}
     
@@ -66,7 +96,18 @@ def load_visual_prompts(refs_data, refs_images_dir):
 
 
 def setup_text_prompts(model):
-    """Настройка текст промптов и классов."""
+    """Настройка текст промптов и классов.
+
+    Parameters
+    ----------
+    model : YOLOE
+        Модель YOLOE для настройки.
+
+    Returns
+    -------
+    YOLOE
+        Модель с настроенными классами и текст промптами.
+    """
     names = ['purple_shield_white_T', 'white_shield_black_T', 'yellow_shield_black_T']
     text_prompts = ['purple shield with white T logo', 'white shield with black T logo', 'yellow shield with black T logo']
     print("Generating text embeddings")
@@ -77,7 +118,30 @@ def setup_text_prompts(model):
 
 
 def perform_prediction(model, img_dir, visual_prompts, conf, iou, runs_dir, device):
-    """Выполнение предсказания на изображениях."""
+    """Выполнение предсказания на изображениях.
+
+    Parameters
+    ----------
+    model : YOLOE
+        Настроенная модель YOLOE.
+    img_dir : str
+        Путь к директории с изображениями для предсказания.
+    visual_prompts : dict
+        Визуальные промпты для модели.
+    conf : float
+        Порог уверенности для предсказаний.
+    iou : float
+        Порог IoU для NMS.
+    runs_dir : str
+        Путь к директории для сохранения результатов.
+    device : str
+        Устройство для выполнения (cpu/cuda).
+
+    Returns
+    -------
+    list
+        Результаты предсказаний.
+    """
     results = model.predict(
         source=img_dir,
         visual_prompts=visual_prompts,
@@ -93,12 +157,36 @@ def perform_prediction(model, img_dir, visual_prompts, conf, iou, runs_dir, devi
 
 
 def run_yolo_predict(img_dir, refs_images_json, runs_dir, conf=0.5, iou=0.7, device='auto', refs_images_dir='/data/tbank_official_logos/images'):
+    """Запуск предсказания YOLOE с визуальными промптами.
+
+    Parameters
+    ----------
+    img_dir : str
+        Путь к директории с изображениями для предсказания.
+    refs_images_json : str
+        Путь к JSON файлу с данными референсов.
+    runs_dir : str
+        Путь к директории для сохранения результатов.
+    conf : float, optional
+        Порог уверенности для предсказаний (default: 0.5).
+    iou : float, optional
+        Порог IoU для NMS (default: 0.7).
+    device : str, optional
+        Устройство для выполнения (default: 'auto').
+    refs_images_dir : str, optional
+        Путь к директории с референсными изображениями (default: '/data/tbank_official_logos/images').
+
+    Returns
+    -------
+    list
+        Результаты предсказаний YOLOE.
+    """
     print(f"Starting YOLOE predict on {img_dir}, refs={refs_images_json}, runs_dir={runs_dir}, conf={conf}, iou={iou}, device={device}")
-    
+
     model = load_model()
     refs_data = load_refs_data(refs_images_json)
     visual_prompts = load_visual_prompts(refs_data, refs_images_dir)
     model = setup_text_prompts(model)
     results = perform_prediction(model, img_dir, visual_prompts, conf, iou, runs_dir, device)
-    
+
     return results
