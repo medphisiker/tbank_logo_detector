@@ -2,7 +2,9 @@
 
 ## Обзор
 
-Используйте Docker контейнер для запуска YOLOE - модели для автоматической разметки логотипов Т-Банка. Контейнер основан на ultralytics/ultralytics:latest с предустановленными зависимостями Ultralytics.
+Используйте Docker контейнер для запуска YOLOE - модели для автоматической разметки логотипов Т-Банка. 
+
+Мой Docker-образ основан на `ultralytics/ultralytics:latest` с предустановленными зависимостями `Ultralytics`.
 
 ### Примеры результатов
 
@@ -20,12 +22,12 @@
 - NVIDIA Docker для GPU.
 - Данные в `data/data_sirius/images/` и `data/tbank_official_logos/`.
 
-## Сборка образа
+## Скачивание готового образа
 
-Из корня проекта:
+Скачайте готовый образ из Docker Hub:
 
 ```
-docker build -f data_preparation/yoloe/ultralytics_dockerfile -t tbank-yoloe-ultralytics data_preparation/yoloe
+docker pull medphisiker/tbank-yoloe-ultralytics
 ```
 
 ## Запуск контейнера
@@ -33,7 +35,7 @@ docker build -f data_preparation/yoloe/ultralytics_dockerfile -t tbank-yoloe-ult
 Из корня проекта:
 
 ```
-docker run -it --gpus all -v ./data:/data -v ./data_preparation/yoloe:/app tbank-yoloe-ultralytics python tbank_yoloe_bulk_inference.py
+docker run -it --gpus all -v ./data:/data -v ./data_preparation/yoloe:/app medphisiker/tbank-yoloe-ultralytics python tbank_yoloe_bulk_inference.py
 ```
 
 - Volume: `./data:/data` для подключения данных для обработки и сохранения результатов обработки.
@@ -77,9 +79,19 @@ docker run -it --gpus all -v ./data:/data -v ./data_preparation/yoloe:/app tbank
 
 Интерактивно:
 ```
-docker run -it --gpus all -v ./data:/data -v ./data_preparation/yoloe:/app tbank-yoloe-ultralytics /bin/bash
+docker run -it --gpus all -v ./data:/data -v ./data_preparation/yoloe:/app medphisiker/tbank-yoloe-ultralytics /bin/bash
 ```
 Затем внутри контейнера:
 ```
 python tbank_yoloe_bulk_inference.py
 ```
+
+## Сборка образа (альтернативный вариант)
+
+Если вы хотите собрать образ самостоятельно, из корня проекта:
+
+```
+docker build -f data_preparation/yoloe/ultralytics_dockerfile -t tbank-yoloe-ultralytics data_preparation/yoloe
+```
+
+Затем используйте `tbank-yoloe-ultralytics` вместо `medphisiker/tbank-yoloe-ultralytics` в командах выше.
