@@ -23,7 +23,7 @@ docker build -f data_preparation/yoloe/ultralytics_dockerfile -t tbank-yoloe-ult
 Из корня проекта:
 
 ```
-docker run -it --gpus all -v ./data:/data -v ./data_preparation/yoloe:/app tbank-yoloe-ultralytics
+docker run -it --gpus all -v ./data:/data -v ./data_preparation/yoloe:/app tbank-yoloe-ultralytics python tbank_yoloe_bulk_inference.py
 ```
 
 - Volume: `./data:/data` для подключения данных для обработки и сохранения результатов обработки.
@@ -52,10 +52,11 @@ docker run -it --gpus all -v ./data:/data -v ./data_preparation/yoloe:/app tbank
 }
 ```
 
-Запуск в контейнере:
-```
-docker run -it --gpus all -v ./data:/data -v ./data_preparation/yoloe:/app tbank-yoloe-ultralytics python tbank_yoloe_bulk_inference.py
-```
+**Примечание по weights_dir**: Из-за бага в ultralytics, веса моделей скачиваются в /app (в Docker-контейнере), независимо от указанного weights_dir. В локальной среде — в рабочую директорию (data_preparation/yoloe). При монтировании -v ./data_preparation/yoloe:/app веса сохраняются локально в data_preparation/yoloe.
+
+**device**: "0" для GPU 0 (рекомендуется в Docker с --gpus all), "cpu" для CPU. "auto" может не работать — используйте явный номер GPU или "cpu".
+
+**subset**: null для полного датасета или число (e.g. 10) для подмножества первых N изображений (копируются в поддиректорию 'subset' внутри input_dir).
 
 ## Выходные файлы
 
@@ -72,5 +73,3 @@ docker run -it --gpus all -v ./data:/data -v ./data_preparation/yoloe:/app tbank
 ```
 python tbank_yoloe_bulk_inference.py
 ```
-
-Пакет yoloe_package в образе, зависимости через uv.

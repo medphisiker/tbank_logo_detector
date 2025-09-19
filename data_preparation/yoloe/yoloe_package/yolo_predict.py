@@ -1,6 +1,8 @@
 from ultralytics import YOLOE
 import numpy as np
 import json
+import cv2
+import os
 
 def run_yolo_predict(img_dir, refs_json, runs_dir, conf=0.5, iou=0.7, device='auto'):
     print(f"Starting YOLOE predict on {img_dir}, refs={refs_json}, runs_dir={runs_dir}, conf={conf}, iou={iou}, device={device}")
@@ -8,21 +10,26 @@ def run_yolo_predict(img_dir, refs_json, runs_dir, conf=0.5, iou=0.7, device='au
     print("Model loaded")
     
     # Load refs for visual prompts
+    REF_BASE_DIR = '/data/tbank_official_logos'
     with open(refs_json, 'r') as f:
         refs_data = json.load(f)
     
     # Create img_dict for normalization
     img_dict = {img['id']: img for img in refs_data['images']}
     
-    # Group bboxes/cls by class (0=purple, 1=white, 2=yellow)
-    grouped_bboxes = {}
-    grouped_cls = np.array([0,1,2])  # For multi-class
+    # Group refer_images, bboxes/cls by class (0=purple, 1=white, 2=yellow)
+    grouped_refs = {0: [], 1: [], 2: []}
     for ann in refs_data['annotations']:
         cls_id = ann['category_id']
         img_id = ann['image_id']
         if img_id not in img_dict:
             continue
         img_info = img_dict[img_id]
+        file_name = img_info['file_name']
+        ref_path = os.path.join(REF_BASE_DIR, 'images', file_name)
+        ref_img = cv2.imread(ref_path)
+        if ref_img is None:
+            continue
         width = img_info['width']
         height = img_info['height']
         bbox = ann['bbox']  # [x,y,w,h]
@@ -31,21 +38,23 @@ def run_yolo_predict(img_dir, refs_json, runs_dir, conf=0.5, iou=0.7, device='au
         y1_norm = y1 / height
         x2_norm = (x1 + bw) / width
         y2_norm = (y1 + bh) / height
-        if cls_id not in grouped_bboxes:
-            grouped_bboxes[cls_id] = []
-        grouped_bboxes[cls_id].append([x1_norm, y1_norm, x2_norm, y2_norm])
+        bbox_norm = [x1_norm, y1_norm, x2_norm, y2_norm]
+        grouped_refs[cls_id].append((ref_img, bbox_norm))
     
-    # Flatten bboxes and cls for visual prompts
-    all_bboxes = []
-    all_cls = []
-    for cls_id, bboxes_list in grouped_bboxes.items():
-        for bbox in bboxes_list:
-            all_bboxes.append(bbox)
-            all_cls.append(cls_id)
+    # Flatten for visual prompts
+    refer_images = []
+    bboxes = []
+    cls_ids = []
+    for cls_id in sorted(grouped_refs.keys()):
+        for ref_img, bbox_norm in grouped_refs[cls_id]:
+            refer_images.append(ref_img)
+            bboxes.append(bbox_norm)
+            cls_ids.append(cls_id)
     
     visual_prompts = {
-        'bboxes': np.array(all_bboxes, dtype=np.float32),
-        'cls': np.array(all_cls, dtype=np.int64)
+        'refer_images': refer_images,
+        'bboxes': np.array(bboxes, dtype=np.float32),
+        'cls': np.array(cls_ids, dtype=np.int64)
     }
     
     # Text prompts matching category ids

@@ -24,18 +24,27 @@
    - Для GPU: убедитесь, что CUDA установлен и torch поддерживает GPU.
 
 3. **Настройте config.json** (в корне yoloe):
-   ```json
-   {
-     "input_dir": "data/data_sirius/images",
-     "refs_json": "data/tbank_official_logos/refs_ls_coco.json",
-     "output_dir": "yoloe_results",
-     "subset": null,
-     "conf": 0.5,
-     "iou": 0.7,
-     "runs_dir": "runs/yoloe_predict",
-     "device": "auto"
-   }
-   ```
+```json
+{
+  "input_dir": "/data/data_sirius/images",
+  "refs_json": "/data/tbank_official_logos/refs_ls_coco.json",
+  "output_dir": "/data/yoloe_results",
+  "subset": null,
+  "conf": 0.5,
+  "iou": 0.7,
+  "runs_dir": "runs/yoloe_predict",
+  "device": "0",
+  "weights_dir": "./ultralytics_weights"
+}
+```
+
+**Примечание по weights_dir**: Из-за бага в ultralytics, веса моделей скачиваются в /app (в Docker-контейнере), независимо от указанного weights_dir. В локальной среде — в рабочую директорию (data_preparation/yoloe). При монтировании -v ./data_preparation/yoloe:/app веса сохраняются локально в data_preparation/yoloe.
+
+**device**: "0" для GPU 0 (рекомендуется в Docker с --gpus all), "cpu" для CPU. "auto" может не работать в некоторых setup — используйте явный параметр.
+
+Для локального запуска используйте относительные пути (e.g. "input_dir": "data/data_sirius/images"), но в Docker — абсолютные как выше.
+
+**subset**: null для полного датасета или число (e.g. 10) для подмножества первых N изображений (копируются в поддиректорию 'subset' внутри input_dir).
 
 4. **Запустите пакет**:
    ```
@@ -61,9 +70,5 @@
 
 - `yoloe_results/pseudo_coco.json`: Псевдо-аннотации в COCO формате для data_sirius.
 - `yoloe_results/runs_yoloe.zip`: Архив с TXT labels и изображениями с bbox.
-
-## Оценка mAP (опционально)
-
-Добавьте GT COCO (e.g. small_gt_coco.json) и используйте pycocotools для оценки в save_results.py.
 
 Пакет готов к использованию без дополнительной установки.

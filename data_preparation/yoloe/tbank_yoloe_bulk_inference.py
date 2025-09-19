@@ -10,8 +10,7 @@ def main():
         config = json.load(f)
     print("Config loaded")
 
-    # weights_dir = config.get("weights_dir", "/data/ultralytics_weights")
-    weights_dir = "./yolo_weights"
+    weights_dir = config.get("weights_dir", "./ultralytics_weights")
     
     settings["weights_dir"] = weights_dir
     print(settings)
