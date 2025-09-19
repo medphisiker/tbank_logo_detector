@@ -11,6 +11,9 @@ data/data_synt
 /data_preparation/synthesis/backgrounds/
 /data_preparation/synthesis/crops/
 
+# ignore prediction folders
+/data_preparation/yoloe/runs/yoloe_predict
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[codz]
