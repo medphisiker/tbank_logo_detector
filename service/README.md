@@ -95,11 +95,12 @@ graph TB
 
 ```mermaid
 graph TB
-    Client[Клиент<br/>Web/Mobile App] --> API[API Gateway<br/>FastAPI Container]
+    Client[Внешний Сервис<br/>API Клиент] --> API[API Gateway<br/>FastAPI Container]
 
     API --> Triton[Triton Inference Server<br/>Container]
 
     Triton --> GPU[GPU Runtime<br/>CUDA Driver]
+    Triton --> Registry[(Model Registry<br/>Mounted Volume)]
 
     API -.->|Configuration| Config[Configuration<br/>Service]
 
@@ -110,12 +111,14 @@ graph TB
 
     subgraph "Infrastructure"
         GPU
+        Registry
         Config
     end
 
     style API fill:#e1f5fe
     style Triton fill:#e8f5e8
     style GPU fill:#f3e5f5
+    style Registry fill:#ffcdd2
     style Config fill:#fce4ec
 ```
 
@@ -123,6 +126,7 @@ graph TB
 - **API Gateway** - FastAPI приложение для обработки HTTP запросов
 - **Triton Inference Server** - NVIDIA контейнер для GPU inference
 - **GPU Runtime** - CUDA драйвер и библиотеки для GPU вычислений
+- **Model Registry** - Хранилище моделей (mounted volume для простоты управления версиями)
 - **Configuration Service** - Управление конфигурацией и настройками
 
 ### C4 Level 3: Component Diagram (Компоненты)
@@ -398,11 +402,18 @@ file: <image_file>
 
 ## Безопасность
 
-- Валидация входных данных
-- Ограничение размера файлов
-- Rate limiting
-- Input sanitization
-- HTTPS в production
+### Базовые меры безопасности (реализованы)
+- **Non-root пользователь**: Все контейнеры запускаются под непривилегированным пользователем
+- **Валидация входных данных**: Pydantic модели для строгой типизации и валидации
+- **Ограничение размера файлов**: Максимальный размер загружаемых изображений (конфигурируемый)
+- **Rate limiting**: Ограничение количества запросов для предотвращения DoS атак
+- **Input sanitization**: Проверка формата и типа файлов
+
+### Продвинутые меры (запланированы)
+- **HTTPS в production**: TLS шифрование для всех соединений
+- **Secrets management**: Безопасное хранение API ключей и конфиденциальных данных
+- **Network policies**: Изоляция сетевого трафика между контейнерами
+- **Security scanning**: Автоматическое сканирование образов на уязвимости
 
 ## Тестирование
 
